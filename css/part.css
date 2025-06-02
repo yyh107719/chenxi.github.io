@@ -1,0 +1,62 @@
+/* 暗夜紫色主题样式 */
+:root {
+  --primary: #9d4edd; /* 主紫色 */
+  --secondary: #7b2cbf; /* 次紫色 */
+  --accent: #c77dff; /* 亮紫色 */
+  --dark: #1a1128; /* 深暗色 */
+  --darker: #0f0a17; /* 更深暗色 */
+  --panel: rgba(30, 20, 48, 0.85); /* 面板背景 */
+  --grid: rgba(157, 78, 221, 0.1); /* 网格线颜色 */
+}
+
+/* 自定义工具类 */
+@layer utilities {
+  .text-gradient {
+    background-clip: text;
+    -webkit-background-clip: text;
+    color: transparent;
+    background-image: linear-gradient(135deg, #c77dff, #9d4edd);
+  }
+  
+  .bg-grid {
+    background-image: linear-gradient(var(--grid) 1px, transparent 1px),
+                      linear-gradient(to right, var(--grid) 1px, transparent 1px);
+    background-size: 30px 30px;
+  }
+  
+  .shadow-glow-purple {
+    box-shadow: 0 0 15px rgba(157, 78, 221, 0.3);
+  }
+  
+  .shadow-glow-purple-lg {
+    box-shadow: 0 0 25px rgba(157, 78, 221, 0.5);
+  }
+  
+  .animate-float {
+    animation: float 6s ease-in-out infinite;
+  }
+  
+  .animate-pulse-slow {
+    animation: pulse 4s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+  }
+  
+  .scrollbar-thin {
+    scrollbar-width: thin;
+  }
+  
+  .scrollbar-thin::-webkit-scrollbar {
+    width: 4px;
+  }
+  
+  .scrollbar-thin::-webkit-scrollbar-thumb {
+    background-color: rgba(157, 78, 221, 0.3);
+    border-radius: 2px;
+  }
+}
+
+/* 粒子动画 */
+@keyframes float {
+  0% { transform: translateY(0px); }
+  50% { transform: translateY(-10px); }
+  100% { transform: translateY(0px); }
+}    

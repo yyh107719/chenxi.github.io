@@ -1,0 +1,443 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>HTML在线运行/测试工具</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link href="https://cdn.jsdelivr.net/npm/font-awesome@4.7.0/css/font-awesome.min.css" rel="stylesheet">
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.8/dist/chart.umd.min.js"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            primary: '#3B82F6',
+            secondary: '#10B981',
+            dark: '#1E293B',
+            darker: '#0F172A',
+            light: '#F8FAFC',
+            'gray-dark': '#334155',
+            'gray-light': '#E2E8F0'
+          },
+          fontFamily: {
+            inter: ['Inter', 'sans-serif'],
+            mono: ['Consolas', 'Monaco', 'monospace']
+          },
+        },
+      }
+    }
+  </script>
+  
+  <style type="text/tailwindcss">
+    @layer utilities {
+      .content-auto {
+        content-visibility: auto;
+      }
+      .editor-shadow {
+        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+      }
+      .glass-effect {
+        backdrop-filter: blur(10px);
+        background-color: rgba(15, 23, 42, 0.8);
+      }
+    }
+  </style>
+</head>
+<body class="bg-gray-900 text-gray-100 font-inter min-h-screen flex flex-col">
+  <!-- 导航栏 -->
+  <nav class="bg-darker border-b border-gray-800 py-3 px-6 flex justify-between items-center sticky top-0 z-50">
+    <div class="flex items-center space-x-2">
+      <i class="fa fa-code text-primary text-2xl"></i>
+      <h1 class="text-xl font-bold text-white">小鱼工具箱</h1>
+    </div>
+    <div class="flex items-center space-x-4">
+      <button class="bg-primary hover:bg-primary/90 text-white px-4 py-2 rounded-lg transition-all duration-300 flex items-center">
+        <i class="fa fa-save mr-2"></i>保存项目
+      </button>
+      <button class="bg-gray-dark hover:bg-gray-700 text-white px-4 py-2 rounded-lg transition-all duration-300 flex items-center">
+        <i class="fa fa-share-alt mr-2"></i>分享
+      </button>
+    </div>
+  </nav>
+
+  <!-- 工具栏 -->
+  <div class="bg-dark border-b border-gray-800 px-6 py-3 flex flex-wrap items-center gap-2">
+    <button class="tool-tab px-4 py-2 rounded-lg bg-darker hover:bg-primary/20 text-white transition-all duration-300 flex items-center" data-tool="rsa_html">
+      <i class="fa fa-html5 mr-2"></i>HTML在线运行/测试
+    </button>
+    <button class="tool-tab px-4 py-2 rounded-lg hover:bg-primary/20 text-white transition-all duration-300 flex items-center" data-tool="css_editor">
+      <i class="fa fa-css3 mr-2"></i>CSS编辑器
+    </button>
+    <button class="tool-tab px-4 py-2 rounded-lg hover:bg-primary/20 text-white transition-all duration-300 flex items-center" data-tool="js_editor">
+      <i class="fa fa-code mr-2"></i>JS编辑器
+    </button>
+    <button class="tool-tab px-4 py-2 rounded-lg hover:bg-primary/20 text-white transition-all duration-300 flex items-center" data-tool="json_formatter">
+      <i class="fa fa-file-code-o mr-2"></i>JSON格式化
+    </button>
+    <div class="ml-auto">
+      <button id="theme-toggle" class="p-2 rounded-full hover:bg-gray-dark transition-all duration-300">
+        <i class="fa fa-moon-o"></i>
+      </button>
+    </div>
+  </div>
+
+  <!-- 主要内容区 -->
+  <main class="flex-1 flex flex-col md:flex-row overflow-hidden">
+    <!-- 编辑器区域 -->
+    <div class="w-full md:w-1/2 bg-darker border-r border-gray-800 flex flex-col">
+      <div class="flex border-b border-gray-800">
+        <button class="editor-tab flex-1 py-3 px-4 font-medium text-white border-b-2 border-primary">HTML</button>
+        <button class="editor-tab flex-1 py-3 px-4 font-medium text-gray-400 hover:text-white transition-colors">CSS</button>
+        <button class="editor-tab flex-1 py-3 px-4 font-medium text-gray-400 hover:text-white transition-colors">JS</button>
+      </div>
+      
+      <div class="flex-1 p-4 overflow-hidden">
+        <div class="h-full w-full relative">
+          <textarea id="html-editor" class="w-full h-full bg-gray-900 text-gray-200 font-mono p-4 rounded-lg outline-none resize-none editor-shadow" rows="20" placeholder="输入HTML代码...">
+&lt;!DOCTYPE html&gt;
+&lt;html lang="zh-CN"&gt;
+&lt;head&gt;
+  &lt;meta charset="UTF-8"&gt;
+  &lt;meta name="viewport" content="width=device-width, initial-scale=1.0"&gt;
+  &lt;title&gt;我的网页&lt;/title&gt;
+  &lt;script src="https://cdn.tailwindcss.com"&gt;&lt;/script&gt;
+  &lt;link href="https://cdn.jsdelivr.net/npm/font-awesome@4.7.0/css/font-awesome.min.css" rel="stylesheet"&gt;
+&lt;/head&gt;
+&lt;body class="bg-gray-100 font-sans"&gt;
+  &lt;div class="container mx-auto p-8"&gt;
+    &lt;h1 class="text-3xl font-bold text-center mb-8 text-primary"&gt;欢迎使用HTML在线运行工具&lt;/h1&gt;
+    
+    &lt;div class="grid grid-cols-1 md:grid-cols-2 gap-8"&gt;
+      &lt;div class="bg-white rounded-xl shadow-lg p-6 transform transition-all hover:scale-105 hover:shadow-xl"&gt;
+        &lt;i class="fa fa-code text-4xl text-primary mb-4"&gt;&lt;/i&gt;
+        &lt;h2 class="text-xl font-bold mb-2"&gt;代码编辑&lt;/h2&gt;
+        &lt;p class="text-gray-600"&gt;在左侧编辑区域编写HTML、CSS和JavaScript代码，实时查看效果。&lt;/p&gt;
+      &lt;/div&gt;
+      
+      &lt;div class="bg-white rounded-xl shadow-lg p-6 transform transition-all hover:scale-105 hover:shadow-xl"&gt;
+        &lt;i class="fa fa-eye text-4xl text-primary mb-4"&gt;&lt;/i&gt;
+        &lt;h2 class="text-xl font-bold mb-2"&gt;实时预览&lt;/h2&gt;
+        &lt;p class="text-gray-600"&gt;代码修改后立即在右侧预览窗口中看到效果，无需刷新。&lt;/p&gt;
+      &lt;/div&gt;
+    &lt;/div&gt;
+    
+    &lt;div class="mt-10 text-center"&gt;
+      &lt;button class="bg-primary hover:bg-primary/90 text-white font-bold py-3 px-6 rounded-lg transition-all duration-300 transform hover:scale-105 hover:shadow-lg"&gt;
+        开始探索 &lt;i class="fa fa-arrow-right ml-2"&gt;&lt;/i&gt;
+      &lt;/button&gt;
+    &lt;/div&gt;
+  &lt;/div&gt;
+&lt;/body&gt;
+&lt;/html&gt;
+          </textarea>
+          <div class="absolute bottom-4 right-4">
+            <button id="format-code" class="bg-gray-dark hover:bg-gray-700 text-white px-3 py-1 rounded-md text-sm flex items-center transition-all duration-300">
+              <i class="fa fa-indent mr-1"></i> 格式化
+            </button>
+          </div>
+        </div>
+      </div>
+      
+      <div class="border-t border-gray-800 p-4 flex justify-between items-center">
+        <div class="flex items-center space-x-4">
+          <button id="run-code" class="bg-primary hover:bg-primary/90 text-white px-6 py-2 rounded-lg flex items-center transition-all duration-300 transform hover:scale-105">
+            <i class="fa fa-play mr-2"></i> 运行代码
+          </button>
+          <button id="reset-code" class="bg-gray-dark hover:bg-gray-700 text-white px-6 py-2 rounded-lg flex items-center transition-all duration-300">
+            <i class="fa fa-refresh mr-2"></i> 重置
+          </button>
+        </div>
+        <div class="text-sm text-gray-400">行数: <span id="line-count">36</span></div>
+      </div>
+    </div>
+    
+    <!-- 预览区域 -->
+    <div class="w-full md:w-1/2 flex flex-col">
+      <div class="bg-dark p-4 border-b border-gray-800 flex justify-between items-center">
+        <h2 class="font-medium">预览</h2>
+        <div class="flex items-center space-x-3">
+          <button id="desktop-preview" class="p-2 rounded hover:bg-gray-dark transition-all duration-300 active">
+            <i class="fa fa-desktop"></i>
+          </button>
+          <button id="tablet-preview" class="p-2 rounded hover:bg-gray-dark transition-all duration-300">
+            <i class="fa fa-tablet"></i>
+          </button>
+          <button id="mobile-preview" class="p-2 rounded hover:bg-gray-dark transition-all duration-300">
+            <i class="fa fa-mobile"></i>
+          </button>
+          <button id="fullscreen-preview" class="p-2 rounded hover:bg-gray-dark transition-all duration-300">
+            <i class="fa fa-expand"></i>
+          </button>
+        </div>
+      </div>
+      
+      <div class="flex-1 overflow-auto bg-gray-800">
+        <iframe id="preview-frame" class="w-full h-full border-0"></iframe>
+      </div>
+    </div>
+  </main>
+
+  <!-- 页脚 -->
+  <footer class="bg-darker border-t border-gray-800 py-4 px-6 text-center text-gray-400 text-sm">
+    <p>小鱼工具箱 © 2025 | 一个强大的前端开发工具集合</p>
+  </footer>
+
+  <!-- 通知组件 -->
+  <div id="notification" class="fixed top-4 right-4 bg-dark border border-gray-700 p-4 rounded-lg shadow-lg transform transition-all duration-500 translate-x-full opacity-0 z-50 max-w-xs">
+    <div class="flex items-start">
+      <div id="notification-icon" class="flex-shrink-0 pt-0.5">
+        <i class="fa fa-check-circle text-green-500 text-xl"></i>
+      </div>
+      <div class="ml-3">
+        <h3 id="notification-title" class="text-sm font-medium text-white">操作成功</h3>
+        <div id="notification-message" class="mt-1 text-xs text-gray-400">
+          代码已成功运行
+        </div>
+      </div>
+      <button id="close-notification" class="ml-auto flex-shrink-0 text-gray-400 hover:text-white">
+        <i class="fa fa-times"></i>
+      </button>
+    </div>
+  </div>
+
+  <script>
+    // DOM元素
+    const htmlEditor = document.getElementById('html-editor');
+    const previewFrame = document.getElementById('preview-frame');
+    const runButton = document.getElementById('run-code');
+    const resetButton = document.getElementById('reset-code');
+    const formatButton = document.getElementById('format-code');
+    const lineCountElement = document.getElementById('line-count');
+    const notification = document.getElementById('notification');
+    const closeNotification = document.getElementById('close-notification');
+    const themeToggle = document.getElementById('theme-toggle');
+    const desktopPreview = document.getElementById('desktop-preview');
+    const tabletPreview = document.getElementById('tablet-preview');
+    const mobilePreview = document.getElementById('mobile-preview');
+    const fullscreenPreview = document.getElementById('fullscreen-preview');
+    
+    // 初始代码
+    const initialCode = htmlEditor.value;
+    
+    // 更新行数
+    function updateLineCount() {
+      const lines = htmlEditor.value.split('\n').length;
+      lineCountElement.textContent = lines;
+    }
+    
+    // 运行代码
+    function runCode() {
+      try {
+        const code = htmlEditor.value;
+        const previewWindow = previewFrame.contentWindow || previewFrame.contentDocument.defaultView;
+        previewWindow.document.open();
+        previewWindow.document.write(code);
+        previewWindow.document.close();
+        
+        showNotification('成功', '代码已成功运行', 'check-circle', 'green-500');
+      } catch (error) {
+        showNotification('错误', '运行代码时出错: ' + error.message, 'exclamation-circle', 'red-500');
+      }
+    }
+    
+    // 重置代码
+    function resetCode() {
+      htmlEditor.value = initialCode;
+      updateLineCount();
+      showNotification('重置', '代码已恢复到初始状态', 'refresh', 'blue-500');
+    }
+    
+    // 格式化代码 (简单实现)
+    function formatCode() {
+      try {
+        // 这里使用简单的缩进逻辑，实际应用中可以使用专业的HTML格式化库
+        const code = htmlEditor.value;
+        const formattedCode = formatHtml(code);
+        htmlEditor.value = formattedCode;
+        updateLineCount();
+        showNotification('格式化', '代码已格式化', 'indent', 'purple-500');
+      } catch (error) {
+        showNotification('错误', '格式化代码时出错: ' + error.message, 'exclamation-circle', 'red-500');
+      }
+    }
+    
+    // 简单的HTML格式化函数
+    function formatHtml(html) {
+      const indentSize = 2;
+      let result = '';
+      let indentLevel = 0;
+      
+      // 简单的HTML标签匹配
+      const tags = html.match(/<[^>]*>/g) || [];
+      let text = html;
+      
+      tags.forEach(tag => {
+        const parts = text.split(tag, 2);
+        result += parts[0].trim() + '\n';
+        
+        // 计算缩进
+        const indent = ' '.repeat(indentLevel * indentSize);
+        
+        // 处理开始标签
+        if (tag.startsWith('<') && !tag.startsWith('</') && !tag.endsWith('/>')) {
+          result += indent + tag + '\n';
+          indentLevel++;
+        } 
+        // 处理结束标签
+        else if (tag.startsWith('</')) {
+          indentLevel--;
+          const newIndent = ' '.repeat(indentLevel * indentSize);
+          result += newIndent + tag + '\n';
+        } 
+        // 处理自闭合标签
+        else if (tag.endsWith('/>')) {
+          result += indent + tag + '\n';
+        } 
+        // 其他标签
+        else {
+          result += indent + tag + '\n';
+        }
+        
+        text = parts[1];
+      });
+      
+      result += text.trim();
+      return result;
+    }
+    
+    // 显示通知
+    function showNotification(title, message, icon, color) {
+      const notificationTitle = document.getElementById('notification-title');
+      const notificationMessage = document.getElementById('notification-message');
+      const notificationIcon = document.getElementById('notification-icon').querySelector('i');
+      
+      notificationTitle.textContent = title;
+      notificationMessage.textContent = message;
+      notificationIcon.className = `fa fa-${icon} text-${color} text-xl`;
+      
+      // 显示通知
+      notification.classList.remove('translate-x-full', 'opacity-0');
+      notification.classList.add('translate-x-0', 'opacity-100');
+      
+      // 3秒后自动关闭
+      setTimeout(() => {
+        hideNotification();
+      }, 3000);
+    }
+    
+    // 隐藏通知
+    function hideNotification() {
+      notification.classList.remove('translate-x-0', 'opacity-100');
+      notification.classList.add('translate-x-full', 'opacity-0');
+    }
+    
+    // 切换预览模式
+    function setPreviewMode(mode) {
+      // 移除所有活动状态
+      desktopPreview.classList.remove('active', 'bg-gray-dark');
+      tabletPreview.classList.remove('active', 'bg-gray-dark');
+      mobilePreview.classList.remove('active', 'bg-gray-dark');
+      
+      // 添加当前活动状态
+      if (mode === 'desktop') {
+        desktopPreview.classList.add('active', 'bg-gray-dark');
+        previewFrame.style.width = '100%';
+        previewFrame.style.maxWidth = 'none';
+      } else if (mode === 'tablet') {
+        tabletPreview.classList.add('active', 'bg-gray-dark');
+        previewFrame.style.width = '768px';
+        previewFrame.style.maxWidth = '100%';
+      } else if (mode === 'mobile') {
+        mobilePreview.classList.add('active', 'bg-gray-dark');
+        previewFrame.style.width = '375px';
+        previewFrame.style.maxWidth = '100%';
+      }
+    }
+    
+    // 全屏预览
+    function toggleFullscreen() {
+      if (!document.fullscreenElement) {
+        previewFrame.requestFullscreen().catch(err => {
+          showNotification('错误', `全屏预览失败: ${err.message}`, 'exclamation-circle', 'red-500');
+        });
+      } else {
+        document.exitFullscreen();
+      }
+    }
+    
+    // 事件监听
+    runButton.addEventListener('click', runCode);
+    resetButton.addEventListener('click', resetCode);
+    formatButton.addEventListener('click', formatCode);
+    closeNotification.addEventListener('click', hideNotification);
+    
+    htmlEditor.addEventListener('input', updateLineCount);
+    
+    // 预览模式切换
+    desktopPreview.addEventListener('click', () => setPreviewMode('desktop'));
+    tabletPreview.addEventListener('click', () => setPreviewMode('tablet'));
+    mobilePreview.addEventListener('click', () => setPreviewMode('mobile'));
+    fullscreenPreview.addEventListener('click', toggleFullscreen);
+    
+    // 主题切换 (目前仅切换图标)
+    themeToggle.addEventListener('click', () => {
+      const icon = themeToggle.querySelector('i');
+      if (icon.classList.contains('fa-moon-o')) {
+        icon.classList.remove('fa-moon-o');
+        icon.classList.add('fa-sun-o');
+      } else {
+        icon.classList.remove('fa-sun-o');
+        icon.classList.add('fa-moon-o');
+      }
+      // 实际项目中这里会切换整个应用的主题
+    });
+    
+    // 工具标签切换
+    const toolTabs = document.querySelectorAll('.tool-tab');
+    toolTabs.forEach(tab => {
+      tab.addEventListener('click', () => {
+        // 移除所有标签的活动状态
+        toolTabs.forEach(t => t.classList.remove('bg-darker', 'border-b-2', 'border-primary'));
+        
+        // 添加当前标签的活动状态
+        tab.classList.add('bg-darker', 'border-b-2', 'border-primary');
+        
+        // 在实际应用中，这里会根据标签切换不同的工具视图
+      });
+    });
+    
+    // 编辑器标签切换
+    const editorTabs = document.querySelectorAll('.editor-tab');
+    editorTabs.forEach(tab => {
+      tab.addEventListener('click', () => {
+        // 移除所有标签的活动状态
+        editorTabs.forEach(t => {
+          t.classList.remove('text-white', 'border-b-2', 'border-primary');
+          t.classList.add('text-gray-400');
+        });
+        
+        // 添加当前标签的活动状态
+        tab.classList.remove('text-gray-400');
+        tab.classList.add('text-white', 'border-b-2', 'border-primary');
+        
+        // 在实际应用中，这里会根据标签切换不同的编辑器内容
+      });
+    });
+    
+    // 初始运行
+    updateLineCount();
+    setTimeout(runCode, 1000); // 页面加载后自动运行一次代码
+    
+    // 窗口大小变化时调整预览窗口
+    window.addEventListener('resize', () => {
+      if (desktopPreview.classList.contains('active')) {
+        previewFrame.style.width = '100%';
+      }
+    });
+    
+  </script>
+</body>
+</html>    

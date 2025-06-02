@@ -1,0 +1,2201 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CyberTools - 科技工具集</title>
+    <script src="./conten_js/public_user/root/proxy.js"></script>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdn.jsdelivr.net/npm/font-awesome@4.7.0/css/font-awesome.min.css" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.8/dist/chart.umd.min.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jsrsasign/10.5.2/jsrsasign-all-min.js"></script>
+    <script src="./conten_js/rsa-utils.js"></script>
+    <script src="./conten_js/des.js"></script>
+    <script src="./conten_js/public_user/user.js"></script>
+    <script src="./conten_js/public_user/log_speak/log.js"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        primary: '#165DFF',
+                        secondary: '#36CFC9',
+                        accent: '#00F5FF',
+                        dark: '#1D2129',
+                        darker: '#12151C',
+                        panel: 'rgba(30, 35, 48, 0.85)',
+                        grid: 'rgba(255, 255, 255, 0.05)'
+                    },
+                    fontFamily: {
+                        inter: ['Inter', 'sans-serif'],
+                        mono: ['JetBrains Mono', 'monospace']
+                    },
+                    boxShadow: {
+                        'glow': '0 0 15px rgba(0, 245, 255, 0.3)',
+                        'glow-lg': '0 0 25px rgba(0, 245, 255, 0.5)'
+                    }
+                }
+            }
+        }
+    </script>
+    <style type="text/tailwindcss">
+        @layer utilities {
+            .content-auto {
+                content-visibility: auto;
+            }
+            .text-gradient {
+                background-clip: text;
+                -webkit-background-clip: text;
+                color: transparent;
+                background-image: linear-gradient(135deg, #00F5FF, #165DFF);
+            }
+            .bg-grid {
+                background-image: linear-gradient(var(--tw-grid-color) 1px, transparent 1px),
+                                  linear-gradient(to right, var(--tw-grid-color) 1px, transparent 1px);
+                background-size: 30px 30px;
+            }
+            .animate-float {
+                animation: float 6s ease-in-out infinite;
+            }
+            .animate-pulse-slow {
+                animation: pulse 4s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+            }
+            .scrollbar-thin {
+                scrollbar-width: thin;
+            }
+            .scrollbar-thin::-webkit-scrollbar {
+                width: 4px;
+            }
+            .scrollbar-thin::-webkit-scrollbar-thumb {
+                background-color: rgba(255, 255, 255, 0.2);
+                border-radius: 2px;
+            }
+        }
+
+        @keyframes float {
+            0% { transform: translateY(0px); }
+            50% { transform: translateY(-10px); }
+            100% { transform: translateY(0px); }
+        }
+    </style>
+</head>
+
+<body class="font-inter bg-darker text-white min-h-screen overflow-x-hidden">
+    <!-- 粒子背景容器 -->
+    <div id="particles-js" class="fixed inset-0 z-0 opacity-70"></div>
+
+    <!-- 主内容区 -->
+    <div class="relative z-10 flex min-h-screen">
+        <!-- 侧边导航栏 -->
+        <aside id="sidebar"
+            class="w-64 bg-panel backdrop-blur-md border-r border-accent/20 fixed h-full transition-all duration-300 transform -translate-x-full md:translate-x-0 z-20">
+            <div class="p-6">
+                <div class="flex items-center space-x-3 mb-10">
+                    <div
+                        class="w-10 h-10 rounded-lg bg-gradient-to-br from-primary to-accent flex items-center justify-center shadow-glow">
+                        <i class="fa fa-cogs text-white"></i>
+                    </div>
+                    <h1 class="text-xl font-bold text-white">小鱼工具箱</h1>
+                </div>
+
+                <nav>
+                    <ul class="space-y-1">
+                        <li>
+                            <a href="#dashboard"
+                                class="nav-link active flex items-center space-x-3 px-4 py-3 rounded-lg text-white hover:bg-primary/20 transition-all">
+                                <i class="fa fa-home w-5 text-center"></i>
+                                <span>首页</span>
+                            </a>
+                        </li>
+                        <li class="mt-6">
+                            <h3 class="text-xs uppercase text-gray-400 font-semibold px-4 mb-2">主要功能</h3>
+                        </li>
+                        <li>
+                            <a href="#automation"
+                                class="nav-link flex items-center space-x-3 px-4 py-3 rounded-lg text-white hover:bg-primary/20 transition-all">
+                                <i class="fa fa-bolt w-5 text-center"></i>
+                                <span>自动化</span>
+                            </a>
+                        </li>
+                        <li>
+                            <a href="#security"
+                                class="nav-link flex items-center space-x-3 px-4 py-3 rounded-lg text-white hover:bg-primary/20 transition-all">
+                                <i class="fa fa-shield w-5 text-center"></i>
+                                <span>网络安全</span>
+                            </a>
+                        </li>
+                        <li>
+                            <a href="#tutorials"
+                                class="nav-link flex items-center space-x-3 px-4 py-3 rounded-lg text-white hover:bg-primary/20 transition-all">
+                                <i class="fa fa-book w-5 text-center"></i>
+                                <span>教程</span>
+                            </a>
+                        </li>
+                        <li class="mt-6">
+                            <h3 class="text-xs uppercase text-gray-400 font-semibold px-4 mb-2">资源</h3>
+                        </li>
+                        <li>
+                            <a href="#api"
+                                class="nav-link flex items-center space-x-3 px-4 py-3 rounded-lg text-white hover:bg-primary/20 transition-all">
+                                <i class="fa fa-code w-5 text-center"></i>
+                                <span>API文档</span>
+                            </a>
+                        </li>
+                        <li>
+                            <a href="./index3.html" id="_reg_html"
+                                class="nav-link flex items-center space-x-3 px-4 py-3 rounded-lg text-white hover:bg-primary/20 transition-all span">
+                                <i class="fa fa-code w-5 text-center"></i>
+                                <span>HTML/在线运行</span>
+                            </a>
+                        </li>
+                        <li>
+                            <a href="#blog"
+                                class="nav-link flex items-center space-x-3 px-4 py-3 rounded-lg text-white hover:bg-primary/20 transition-all">
+                                <i class="fa fa-rss w-5 text-center"></i>
+                                <span>博客</span>
+                            </a>
+                        </li>
+                        <li class="mt-6">
+                            <h3 class="text-xs uppercase text-gray-400 font-semibold px-4 mb-2">账户</h3>
+                        </li>
+                        <li>
+                            <a href="#settings"
+                                class="nav-link flex items-center space-x-3 px-4 py-3 rounded-lg text-white hover:bg-primary/20 transition-all">
+                                <i class="fa fa-cog w-5 text-center"></i>
+                                <span>设置</span>
+                            </a>
+
+                        </li>
+                        <li>
+                            <a href="#logout" id="_tuichu_"
+                                class="nav-link flex items-center space-x-3 px-4 py-3 rounded-lg text-white hover:bg-primary/20 transition-all">
+                                <i class="fa fa-sign-out w-5 text-center"></i>
+                                <span>退出</span>
+                            </a>
+                        </li>
+                    </ul>
+                </nav>
+            </div>
+
+            <!-- 底部用户信息 -->
+            <div class="absolute bottom-0 left-0 right-0 p-4 border-t border-accent/20 boder-t-2">
+                <div class="flex items-center space-x-3">
+                    <img src="https://picsum.photos/id/1005/40/40" alt="用户头像"
+                        class="w-10 h-10 rounded-full border-2 border-accent">
+                    <div>
+                        <p class="text-sm font-medium">访客用户</p>
+                        <p class="text-xs text-gray-400">测试账户</p>
+                    </div>
+                </div>
+            </div>
+        </aside>
+
+        <!-- 主内容 -->
+        <main class="flex-1 md:ml-64 transition-all duration-300">
+            <!-- 顶部导航 -->
+            <header class="bg-panel backdrop-blur-md border-b border-accent/20 sticky top-0 z-10">
+                <div class="container mx-auto px-4">
+                    <div class="flex items-center justify-between h-16">
+                        <!-- 移动端菜单按钮 -->
+                        <button id="mobile-menu-button"
+                            class="md:hidden text-white p-2 rounded-md hover:bg-primary/20 focus:outline-none">
+                            <i class="fa fa-bars"></i>
+                        </button>
+
+                        <!-- 搜索栏 -->
+                        <div class="hidden md:flex items-center flex-1 max-w-md mx-8">
+                            <div class="relative w-full">
+                                <input type="text" placeholder="搜索工具或文档..."
+                                    class="w-full bg-darker border border-accent/30 rounded-lg px-4 py-2 pl-10 text-sm focus:outline-none focus:ring-2 focus:ring-accent/50">
+                                <i
+                                    class="fa fa-search absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400"></i>
+                            </div>
+                        </div>
+
+                        <!-- 用户菜单 -->
+                        <div class="flex items-center space-x-4">
+                            <button class="p-2 rounded-full hover:bg-primary/20 transition-colors relative">
+                                <i class="fa fa-bell-o"></i>
+                                <span class="absolute top-1 right-1 w-2 h-2 bg-accent rounded-full"></span>
+                            </button>
+                            <button class="p-2 rounded-full hover:bg-primary/20 transition-colors">
+                                <i class="fa fa-cog"></i>
+                            </button>
+                            <div class="hidden md:block">
+                                <img src="https://picsum.photos/id/1005/40/40" alt="用户头像"
+                                    class="w-8 h-8 rounded-full border border-accent/30">
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </header>
+
+            <!-- 页面内容 -->
+            <div class="container mx-auto px-4 py-8">
+                <!-- 仪表盘页面 -->
+                <section id="dashboard-page" class="page-content">
+                    <div class="mb-8">
+                        <h1 class="text-[clamp(1.5rem,3vw,2.5rem)] font-bold mb-2">小鱼工具箱</h1>
+                        <p class="text-gray-400">强大的开发工具集，提升您的工作效率</p>
+                    </div>
+
+                    <!-- 统计卡片 -->
+                    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+                        <div
+                            class="bg-panel backdrop-blur-sm rounded-xl p-6 border border-accent/20 shadow-glow hover:shadow-glow-lg transition-all">
+                            <div class="flex items-center justify-between mb-4">
+                                <h3 class="text-gray-400 font-medium">活跃工具</h3>
+                                <span class="bg-primary/20 text-primary text-xs px-2 py-1 rounded-full">+12%</span>
+                            </div>
+                            <div class="flex items-end justify-between">
+                                <p class="text-3xl font-bold">24</p>
+                                <div class="w-16 h-16 flex items-center justify-center bg-primary/10 rounded-full">
+                                    <i class="fa fa-wrench text-primary text-xl"></i>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div
+                            class="bg-panel backdrop-blur-sm rounded-xl p-6 border border-accent/20 shadow-glow hover:shadow-glow-lg transition-all">
+                            <div class="flex items-center justify-between mb-4">
+                                <h3 class="text-gray-400 font-medium">月使用量</h3>
+                                <span class="bg-secondary/20 text-secondary text-xs px-2 py-1 rounded-full">+43%</span>
+                            </div>
+                            <div class="flex items-end justify-between">
+                                <p class="text-3xl font-bold">1,284</p>
+                                <div class="w-16 h-16 flex items-center justify-center bg-secondary/10 rounded-full">
+                                    <i class="fa fa-chart-line text-secondary text-xl"></i>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div
+                            class="bg-panel backdrop-blur-sm rounded-xl p-6 border border-accent/20 shadow-glow hover:shadow-glow-lg transition-all">
+                            <div class="flex items-center justify-between mb-4">
+                                <h3 class="text-gray-400 font-medium">API调用</h3>
+                                <span class="bg-accent/20 text-accent text-xs px-2 py-1 rounded-full">+8%</span>
+                            </div>
+                            <div class="flex items-end justify-between">
+                                <p class="text-3xl font-bold">5.2K</p>
+                                <div class="w-16 h-16 flex items-center justify-center bg-accent/10 rounded-full">
+                                    <i class="fa fa-exchange text-accent text-xl"></i>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div
+                            class="bg-panel backdrop-blur-sm rounded-xl p-6 border border-accent/20 shadow-glow hover:shadow-glow-lg transition-all">
+                            <div class="flex items-center justify-between mb-4">
+                                <h3 class="text-gray-400 font-medium">满意度</h3>
+                                <span class="bg-green-500/20 text-green-500 text-xs px-2 py-1 rounded-full">98%</span>
+                            </div>
+                            <div class="flex items-end justify-between">
+                                <p class="text-3xl font-bold">4.9/5</p>
+                                <div class="w-16 h-16 flex items-center justify-center bg-green-500/10 rounded-full">
+                                    <i class="fa fa-star text-green-500 text-xl"></i>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- 工具类别 -->
+                    <div class="mb-12">
+                        <h2 class="text-2xl font-bold mb-6">热门工具类别</h2>
+                        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+                            <a href="#automation"
+                                class="bg-panel backdrop-blur-sm rounded-xl p-6 border border-accent/20 hover:border-accent/40 transition-all group">
+                                <div class="flex items-center mb-4">
+                                    <div
+                                        class="w-12 h-12 rounded-lg bg-primary/20 flex items-center justify-center group-hover:bg-primary/30 transition-all">
+                                        <i class="fa fa-bolt text-primary text-xl"></i>
+                                    </div>
+                                    <h3 class="ml-4 text-xl font-semibold">自动化工具</h3>
+                                </div>
+                                <p class="text-gray-400 mb-4">提高工作效率的自动化脚本和工具</p>
+                                <div class="flex items-center text-accent text-sm">
+                                    <span>查看工具</span>
+                                    <i class="fa fa-arrow-right ml-2 group-hover:ml-3 transition-all"></i>
+                                </div>
+                            </a>
+
+                            <a href="#security"
+                                class="bg-panel backdrop-blur-sm rounded-xl p-6 border border-accent/20 hover:border-accent/40 transition-all group">
+                                <div class="flex items-center mb-4">
+                                    <div
+                                        class="w-12 h-12 rounded-lg bg-red-500/20 flex items-center justify-center group-hover:bg-red-500/30 transition-all">
+                                        <i class="fa fa-shield text-red-500 text-xl"></i>
+                                    </div>
+                                    <h3 class="ml-4 text-xl font-semibold">网络安全</h3>
+                                </div>
+                                <p class="text-gray-400 mb-4">保护您的数据和系统安全的工具</p>
+                                <div class="flex items-center text-accent text-sm">
+                                    <span>查看工具</span>
+                                    <i class="fa fa-arrow-right ml-2 group-hover:ml-3 transition-all"></i>
+                                </div>
+                            </a>
+
+                            <a href="#development"
+                                class="bg-panel backdrop-blur-sm rounded-xl p-6 border border-accent/20 hover:border-accent/40 transition-all group">
+                                <div class="flex items-center mb-4">
+                                    <div
+                                        class="w-12 h-12 rounded-lg bg-purple-500/20 flex items-center justify-center group-hover:bg-purple-500/30 transition-all">
+                                        <i class="fa fa-code text-purple-500 text-xl"></i>
+                                    </div>
+                                    <h3 class="ml-4 text-xl font-semibold">开发工具</h3>
+                                </div>
+                                <p class="text-gray-400 mb-4">代码生成、格式化和调试工具</p>
+                                <div class="flex items-center text-accent text-sm">
+                                    <span>查看工具</span>
+                                    <i class="fa fa-arrow-right ml-2 group-hover:ml-3 transition-all"></i>
+                                </div>
+                            </a>
+                        </div>
+                    </div>
+
+                    <!-- 最近使用 -->
+                    <div>
+                        <div class="flex items-center justify-between mb-6">
+                            <h2 class="text-2xl font-bold">最近使用</h2>
+                            <a href="#" class="text-accent hover:underline text-sm">查看全部</a>
+                        </div>
+                        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                            <div
+                                class="bg-panel backdrop-blur-sm rounded-lg p-4 border border-accent/20 flex items-center hover:bg-primary/5 transition-all">
+                                <div class="w-10 h-10 rounded bg-primary/20 flex items-center justify-center mr-4">
+                                    <i class="fa fa-lock text-primary"></i>
+                                </div>
+                                <div class="flex-1">
+                                    <h4 class="font-medium">MD5 加密工具</h4>
+                                    <p class="text-xs text-gray-400">上次使用: 今天 14:32</p>
+                                </div>
+                                <button class="text-gray-400 hover:text-white">
+                                    <i class="fa fa-ellipsis-v"></i>
+                                </button>
+                            </div>
+
+                            <div
+                                class="bg-panel backdrop-blur-sm rounded-lg p-4 border border-accent/20 flex items-center hover:bg-primary/5 transition-all">
+                                <div class="w-10 h-10 rounded bg-secondary/20 flex items-center justify-center mr-4">
+                                    <i class="fa fa-code text-secondary"></i>
+                                </div>
+                                <div class="flex-1">
+                                    <h4 class="font-medium">Base64 编码/解码</h4>
+                                    <p class="text-xs text-gray-400">上次使用: 昨天 09:15</p>
+                                </div>
+                                <button class="text-gray-400 hover:text-white">
+                                    <i class="fa fa-ellipsis-v"></i>
+                                </button>
+                            </div>
+
+                            <div
+                                class="bg-panel backdrop-blur-sm rounded-lg p-4 border border-accent/20 flex items-center hover:bg-primary/5 transition-all">
+                                <div class="w-10 h-10 rounded bg-purple-500/20 flex items-center justify-center mr-4">
+                                    <i class="fa fa-file-code-o text-purple-500"></i>
+                                </div>
+                                <div class="flex-1">
+                                    <h4 class="font-medium">JSON 格式化工具</h4>
+                                    <p class="text-xs text-gray-400">上次使用: 3天前 16:47</p>
+                                </div>
+                                <button class="text-gray-400 hover:text-white">
+                                    <i class="fa fa-ellipsis-v"></i>
+                                </button>
+                            </div>
+
+
+
+                        </div>
+                    </div>
+                </section>
+                <!-- 网络安全页面 -->
+                <section id="security-page" class="page-content hidden">
+                    <div class="mb-8">
+                        <h1 class="text-[clamp(1.5rem,3vw,2.5rem)] font-bold mb-2">网络安全工具</h1>
+                        <p class="text-gray-400">保护您的数据和系统安全的工具</p>
+                    </div>
+
+                    <!-- 工具选择器 -->
+                    <div class="mb-8">
+                        <div class="flex flex-wrap gap-2">
+                            <button class="security-tool-tab active px-4 py-2 rounded-lg bg-primary text-white"
+                                data-tool="port-scan">
+                                端口扫描器
+                            </button>
+                            <button
+                                class="security-tool-tab px-4 py-2 rounded-lg bg-darker hover:bg-primary/20 text-white"
+                                data-tool="password-generator">
+                                密码生成器
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- 端口扫描器 -->
+                    <div class="security-tool-content" id="port-scan-tool">
+                        <div class="bg-panel backdrop-blur-sm rounded-xl p-6 border border-accent/20 mb-8">
+                            <h3 class="text-xl font-semibold mb-6">端口扫描器</h3>
+
+                            <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-400 mb-2">目标主机</label>
+                                    <input type="text" id="port-scan-host"
+                                        class="w-full bg-darker border border-accent/30 rounded-lg p-4 text-white focus:outline-none focus:ring-2 focus:ring-accent/50"
+                                        placeholder="例如: example.com 或 192.168.1.1">
+
+                                    <label class="block text-sm font-medium text-gray-400 mb-2 mt-4">端口范围</label>
+                                    <div class="flex space-x-2">
+                                        <input type="number" id="port-scan-start" min="1" max="65535" value="1"
+                                            class="w-full bg-darker border border-accent/30 rounded-lg p-4 text-white focus:outline-none focus:ring-2 focus:ring-accent/50">
+                                        <span class="flex items-center text-gray-400">至</span>
+                                        <input type="number" id="port-scan-end" min="1" max="65535" value="100"
+                                            class="w-full bg-darker border border-accent/30 rounded-lg p-4 text-white focus:outline-none focus:ring-2 focus:ring-accent/50">
+                                    </div>
+
+                                    <div class="flex justify-between mt-6">
+                                        <button id="start-port-scan"
+                                            class="px-4 py-2 bg-primary hover:bg-primary/90 text-white rounded-lg transition-all">
+                                            开始扫描
+                                        </button>
+                                        <button id="stop-port-scan" disabled
+                                            class="px-4 py-2 bg-darker hover:bg-darker/80 text-white rounded-lg transition-all">
+                                            停止扫描
+                                        </button>
+                                    </div>
+                                </div>
+
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-400 mb-2">扫描结果</label>
+                                    <div id="port-scan-results"
+                                        class="w-full bg-darker border border-accent/30 rounded-lg p-4 h-40 text-white overflow-auto scrollbar-thin">
+                                        准备就绪，请输入目标主机并点击"开始扫描"
+                                    </div>
+
+                                    <div class="flex justify-between mt-4">
+                                        <button id="clear-port-results"
+                                            class="px-4 py-2 bg-darker hover:bg-darker/80 text-white rounded-lg transition-all">
+                                            清空结果
+                                        </button>
+                                        <div id="port-scan-status" class="text-sm text-gray-400">
+                                            状态: 就绪
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="bg-panel backdrop-blur-sm rounded-xl p-6 border border-accent/20">
+                            <h3 class="text-xl font-semibold mb-4">关于端口扫描</h3>
+                            <p class="text-gray-300 mb-4">
+                                端口扫描是一种用于确定目标主机上哪些端口开放的技术。开放的端口可能代表系统上运行的服务，了解这些信息有助于评估网络安全性。
+                            </p>
+                            <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mt-6">
+                                <div class="bg-darker p-4 rounded-lg">
+                                    <h4 class="font-medium mb-2">用途</h4>
+                                    <ul class="text-gray-400 space-y-1">
+                                        <li>- 识别网络服务</li>
+                                        <li>- 安全评估</li>
+                                        <li>- 漏洞检测</li>
+                                    </ul>
+                                </div>
+                                <div class="bg-darker p-4 rounded-lg">
+                                    <h4 class="font-medium mb-2">扫描类型</h4>
+                                    <ul class="text-gray-400 space-y-1">
+                                        <li>- TCP 连接扫描</li>
+                                        <li>- SYN 扫描</li>
+                                        <li>- UDP 扫描</li>
+                                    </ul>
+                                </div>
+                                <div class="bg-darker p-4 rounded-lg">
+                                    <h4 class="font-medium mb-2">注意事项</h4>
+                                    <ul class="text-gray-400 space-y-1">
+                                        <li>- 仅扫描您有权限的系统</li>
+                                        <li>- 频繁扫描可能被防火墙拦截</li>
+                                        <li>- 本工具为简化版，功能有限</li>
+                                    </ul>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- 密码生成器 -->
+                    <div class="security-tool-content hidden" id="password-generator-tool">
+                        <div class="bg-panel backdrop-blur-sm rounded-xl p-6 border border-accent/20 mb-8">
+                            <h3 class="text-xl font-semibold mb-6">密码生成器</h3>
+
+                            <div class="space-y-6">
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-400 mb-2">密码长度</label>
+                                    <div class="flex items-center space-x-4">
+                                        <input type="range" id="password-length" min="8" max="32" value="16" step="1"
+                                            class="w-full h-2 bg-darker rounded-lg appearance-none cursor-pointer accent-primary">
+                                        <span id="password-length-value"
+                                            class="text-white min-w-[30px] text-center">16</span>
+                                    </div>
+                                </div>
+
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-400 mb-2">密码选项</label>
+                                    <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+                                        <label class="flex items-center">
+                                            <input type="checkbox" id="include-uppercase" checked
+                                                class="w-4 h-4 text-primary bg-darker rounded border-gray-600 focus:ring-primary">
+                                            <span class="ml-2 text-sm text-gray-300">包含大写字母 (A-Z)</span>
+                                        </label>
+                                        <label class="flex items-center">
+                                            <input type="checkbox" id="include-lowercase" checked
+                                                class="w-4 h-4 text-primary bg-darker rounded border-gray-600 focus:ring-primary">
+                                            <span class="ml-2 text-sm text-gray-300">包含小写字母 (a-z)</span>
+                                        </label>
+                                        <label class="flex items-center">
+                                            <input type="checkbox" id="include-numbers" checked
+                                                class="w-4 h-4 text-primary bg-darker rounded border-gray-600 focus:ring-primary">
+                                            <span class="ml-2 text-sm text-gray-300">包含数字 (0-9)</span>
+                                        </label>
+                                        <label class="flex items-center">
+                                            <input type="checkbox" id="include-symbols" checked
+                                                class="w-4 h-4 text-primary bg-darker rounded border-gray-600 focus:ring-primary">
+                                            <span class="ml-2 text-sm text-gray-300">包含符号 (!@#$%^&*)</span>
+                                        </label>
+                                        <label class="flex items-center">
+                                            <input type="checkbox" id="exclude-similar"
+                                                class="w-4 h-4 text-primary bg-darker rounded border-gray-600 focus:ring-primary">
+                                            <span class="ml-2 text-sm text-gray-300">排除易混淆字符 (i, l, 1, L, o, 0,
+                                                O)</span>
+                                        </label>
+                                        <label class="flex items-center">
+                                            <input type="checkbox" id="exclude-ambiguous"
+                                                class="w-4 h-4 text-primary bg-darker rounded border-gray-600 focus:ring-primary">
+                                            <span class="ml-2 text-sm text-gray-300">排除可能引起歧义的字符 ({, }, [, ], (, ), /,
+                                                \, ', ", `, ,, ;, :, .)</span>
+                                        </label>
+                                    </div>
+                                </div>
+
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-400 mb-2">生成的密码</label>
+                                    <div class="relative">
+                                        <input type="text" id="generated-password" readonly
+                                            class="w-full bg-darker border border-accent/30 rounded-lg p-4 pr-10 text-white focus:outline-none focus:ring-2 focus:ring-accent/50">
+                                        <button id="copy-password"
+                                            class="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-white">
+                                            <i class="fa fa-copy"></i>
+                                        </button>
+                                    </div>
+                                </div>
+
+                                <div class="flex justify-center">
+                                    <button id="generate-password"
+                                        class="px-6 py-2 bg-primary hover:bg-primary/90 text-white rounded-lg transition-all">
+                                        生成密码
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="bg-panel backdrop-blur-sm rounded-xl p-6 border border-accent/20">
+                            <h3 class="text-xl font-semibold mb-4">关于密码生成器</h3>
+                            <p class="text-gray-300 mb-4">
+                                强密码是保护您账户安全的基础。使用随机生成的复杂密码可以大大降低被破解的风险。本工具可以帮助您生成符合安全标准的随机密码。
+                            </p>
+                            <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mt-6">
+                                <div class="bg-darker p-4 rounded-lg">
+                                    <h4 class="font-medium mb-2">安全建议</h4>
+                                    <ul class="text-gray-400 space-y-1">
+                                        <li>- 使用至少16位长度的密码</li>
+                                        <li>- 定期更换密码</li>
+                                        <li>- 不重复使用同一密码</li>
+                                    </ul>
+                                </div>
+                                <div class="bg-darker p-4 rounded-lg">
+                                    <h4 class="font-medium mb-2">密码强度</h4>
+                                    <ul class="text-gray-400 space-y-1">
+                                        <li>- 8-12位: 弱</li>
+                                        <li>- 12-16位: 中等</li>
+                                        <li>- 16位以上: 强</li>
+                                    </ul>
+                                </div>
+                                <div class="bg-darker p-4 rounded-lg">
+                                    <h4 class="font-medium mb-2">最佳实践</h4>
+                                    <ul class="text-gray-400 space-y-1">
+                                        <li>- 使用密码管理器</li>
+                                        <li>- 启用双因素认证</li>
+                                        <li>- 避免使用个人信息</li>
+                                    </ul>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+                <!-- 自动化工具页面 -->
+                <section id="automation-page" class="page-content hidden">
+                    <div class="mb-8">
+                        <h1 class="text-[clamp(1.5rem,3vw,2.5rem)] font-bold mb-2">自动化工具</h1>
+                        <p class="text-gray-400">提高工作效率的自动化脚本和工具</p>
+                    </div>
+
+                    <!-- 工具选择器 -->
+                    <div class="mb-8">
+                        <div class="flex flex-wrap gap-2">
+                            <button class="tool-tab active px-4 py-2 rounded-lg bg-primary text-white" data-tool="md5">
+                                MD5 加密工具
+                            </button>
+                            <button class="tool-tab px-4 py-2 rounded-lg bg-darker hover:bg-primary/20 text-white"
+                                data-tool="base64">
+                                Base64 编码/解码
+                            </button>
+                            <button class="tool-tab px-4 py-2 rounded-lg bg-darker hover:bg-primary/20 text-white"
+                                data-tool="json">
+                                JSON 格式化工具
+                            </button>
+                            <button class="tool-tab px-4 py-2 rounded-lg bg-darker hover:bg-primary/20 text-white"
+                                data-tool="ast">
+                                AST解混淆
+                            </button>
+                            <button class="tool-tab px-4 py-2 rounded-lg bg-darker hover:bg-primary/20 text-white"
+                                data-tool="ip-check">
+                                IP地址合法检测
+                            </button>
+                            <button class="tool-tab px-4 py-2 rounded-lg bg-darker hover:bg-primary/20 text-white"
+                                data-tool="url-to-requests">
+                                代码生成
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- 工具内容区 -->
+                    <div class="tool-content" id="md5-tool">
+                        <div class="bg-panel backdrop-blur-sm rounded-xl p-6 border border-accent/20 mb-8">
+                            <h3 class="text-xl font-semibold mb-6">MD5 加密工具</h3>
+
+                            <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-400 mb-2">输入文本</label>
+                                    <textarea id="md5-input"
+                                        class="w-full bg-darker border border-accent/30 rounded-lg p-4 h-40 text-white focus:outline-none focus:ring-2 focus:ring-accent/50 scrollbar-thin"></textarea>
+
+                                    <div class="flex justify-between mt-4">
+                                        <button id="md5-encrypt"
+                                            class="px-4 py-2 bg-primary hover:bg-primary/90 text-white rounded-lg transition-all">
+                                            加密
+                                        </button>
+                                        <button id="md5-clear"
+                                            class="px-4 py-2 bg-darker hover:bg-darker/80 text-white rounded-lg transition-all">
+                                            清空
+                                        </button>
+                                    </div>
+                                </div>
+
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-400 mb-2">MD5 结果</label>
+                                    <div id="md5-output"
+                                        class="w-full bg-darker border border-accent/30 rounded-lg p-4 h-40 text-white overflow-auto scrollbar-thin">
+                                    </div>
+
+                                    <div class="flex justify-between mt-4">
+                                        <button id="md5-copy"
+                                            class="px-4 py-2 bg-accent hover:bg-accent/90 text-white rounded-lg transition-all">
+                                            复制结果
+                                        </button>
+                                        <div id="md5-copy-notification"
+                                            class="hidden px-4 py-2 bg-green-500/20 text-green-400 rounded-lg text-sm">
+                                            已复制!
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="bg-panel backdrop-blur-sm rounded-xl p-6 border border-accent/20">
+                            <h3 class="text-xl font-semibold mb-4">关于 MD5</h3>
+
+                            <p class="text-gray-300 mb-4">MD5 消息摘要算法是一种广泛使用的哈希函数，产生一个 128 位（16 字节）的哈希值（通常表示为 32
+                                位十六进制数）。虽然 MD5 不再被认为是安全的加密哈希函数（存在碰撞漏洞），但它仍然广泛用于文件校验和其他不需要密码学安全性的应用场景。</p>
+                            <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mt-6">
+                                <div class="bg-darker p-4 rounded-lg">
+                                    <h4 class="font-medium mb-2">用途</h4>
+                                    <ul class="text-gray-400 space-y-1">
+                                        <li>- 文件完整性检查</li>
+                                        <li>- 数据比较</li>
+                                        <li>- 非安全场景下的哈希</li>
+                                    </ul>
+                                </div>
+                                <div class="bg-darker p-4 rounded-lg">
+                                    <h4 class="font-medium mb-2">特点</h4>
+                                    <ul class="text-gray-400 space-y-1">
+                                        <li>- 128位哈希值</li>
+                                        <li>- 快速计算</li>
+                                        <li>- 不再推荐用于安全应用</li>
+                                    </ul>
+                                </div>
+                                <div class="bg-darker p-4 rounded-lg">
+                                    <h4 class="font-medium mb-2">示例</h4>
+                                    <p class="text-gray-400">输入: "Hello World"</p>
+                                    <p class="text-accent">输出: 5eb63bbbe01eeed093cb22bb8f5acdc3</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="tool-content hidden" id="base64-tool">
+                        <div class="bg-panel backdrop-blur-sm rounded-xl p-6 border border-accent/20 mb-8">
+                            <h3 class="text-xl font-semibold mb-6">Base64 编码/解码工具</h3>
+
+                            <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-400 mb-2">输入文本</label>
+                                    <textarea id="base64-input"
+                                        class="w-full bg-darker border border-accent/30 rounded-lg p-4 h-40 text-white focus:outline-none focus:ring-2 focus:ring-accent/50 scrollbar-thin"></textarea>
+
+                                    <div class="flex space-x-2 mt-4">
+                                        <button id="base64-encode"
+                                            class="px-4 py-2 bg-primary hover:bg-primary/90 text-white rounded-lg transition-all flex-1">
+                                            编码
+                                        </button>
+                                        <button id="base64-decode"
+                                            class="px-4 py-2 bg-secondary hover:bg-secondary/90 text-white rounded-lg transition-all flex-1">
+                                            解码
+                                        </button>
+                                        <button id="base64-clear"
+                                            class="px-4 py-2 bg-darker hover:bg-darker/80 text-white rounded-lg transition-all">
+                                            清空
+                                        </button>
+                                    </div>
+                                </div>
+
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-400 mb-2">结果</label>
+                                    <div id="base64-output"
+                                        class="w-full bg-darker border border-accent/30 rounded-lg p-4 h-40 text-white overflow-auto scrollbar-thin">
+                                    </div>
+
+                                    <div class="flex justify-between mt-4">
+                                        <button id="base64-copy"
+                                            class="px-4 py-2 bg-accent hover:bg-accent/90 text-white rounded-lg transition-all">
+                                            复制结果
+                                        </button>
+                                        <div id="base64-copy-notification"
+                                            class="hidden px-4 py-2 bg-green-500/20 text-green-400 rounded-lg text-sm">
+                                            已复制!
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="bg-panel backdrop-blur-sm rounded-xl p-6 border border-accent/20">
+                            <h3 class="text-xl font-semibold mb-4">关于 Base64</h3>
+                            <p class="text-gray-300 mb-4">Base64 是一种基于 64 个可打印字符来表示二进制数据的编码方式，常用于需要通过文本协议传输二进制数据的场景，如在
+                                URL、Cookie、网页中嵌入图像等。Base64 不是加密算法，只是一种编码方式，因此不提供数据安全性。</p>
+                            <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mt-6">
+                                <div class="bg-darker p-4 rounded-lg">
+                                    <h4 class="font-medium mb-2">用途</h4>
+                                    <ul class="text-gray-400 space-y-1">
+                                        <li>- 邮件附件</li>
+                                        <li>- URL 安全传输</li>
+                                        <li>- 网页中嵌入图像</li>
+                                    </ul>
+                                </div>
+                                <div class="bg-darker p-4 rounded-lg">
+                                    <h4 class="font-medium mb-2">特点</h4>
+                                    <ul class="text-gray-400 space-y-1">
+                                        <li>- 使用 64 个字符</li>
+                                        <li>- 数据量增加约 33%</li>
+                                        <li>- 不是加密方法</li>
+                                    </ul>
+                                </div>
+                                <div class="bg-darker p-4 rounded-lg">
+                                    <h4 class="font-medium mb-2">示例</h4>
+                                    <p class="text-gray-400">输入: "Hello World"</p>
+                                    <p class="text-accent">编码后: SGVsbG8gV29ybGQ=</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="tool-content hidden" id="ast-tool">
+                        <div class="bg-panel backdrop-blur-sm rounded-xl p-6 border border-accent/20 mb-8">
+                            <h3 class="text-xl font-semibold mb-6">AST解混淆工具</h3>
+
+                            <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-400 mb-2">输入混淆代码</label>
+                                    <textarea id="ast-input"
+                                        class="w-full bg-darker border border-accent/30 rounded-lg p-4 h-40 text-white focus:outline-none focus:ring-2 focus:ring-accent/50 scrollbar-thin font-mono"></textarea>
+
+                                    <div class="flex justify-between mt-4">
+                                        <button id="ast-deobfuscate"
+                                            class="px-4 py-2 bg-primary hover:bg-primary/90 text-white rounded-lg transition-all">
+                                            解混淆
+                                        </button>
+                                        <button id="ast-clear"
+                                            class="px-4 py-2 bg-darker hover:bg-darker/80 text-white rounded-lg transition-all">
+                                            清空
+                                        </button>
+                                    </div>
+                                </div>
+
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-400 mb-2">解混淆结果</label>
+                                    <div id="ast-output"
+                                        class="w-full bg-darker border border-accent/30 rounded-lg p-4 h-40 text-white overflow-auto scrollbar-thin font-mono">
+                                    </div>
+
+                                    <div class="flex justify-between mt-4">
+                                        <button id="ast-copy"
+                                            class="px-4 py-2 bg-accent hover:bg-accent/90 text-white rounded-lg transition-all">
+                                            复制结果
+                                        </button>
+                                        <div id="ast-copy-notification"
+                                            class="hidden px-4 py-2 bg-green-500/20 text-green-400 rounded-lg text-sm">
+                                            已复制!
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="bg-panel backdrop-blur-sm rounded-xl p-6 border border-accent/20">
+                            <h3 class="text-xl font-semibold mb-4">关于 AST解混淆</h3>
+                            <p class="text-gray-300 mb-4">
+                                通过抽象语法树（AST）分析解混淆 JavaScript 代码，支持处理常见的字符串拼接混淆、变量名混淆等场景。<br>
+                                <strong>注意</strong>：本工具为简化实现，仅支持基础解混淆逻辑。
+                            </p>
+                            <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mt-6">
+                                <div class="bg-darker p-4 rounded-lg">
+                                    <h4 class="font-medium mb-2">支持场景</h4>
+                                    <ul class="text-gray-400 space-y-1">
+                                        <li>- 字符串逐字符拼接</li>
+                                        <li>- 简单变量名替换</li>
+                                    </ul>
+                                </div>
+                                <div class="bg-darker p-4 rounded-lg">
+                                    <h4 class="font-medium mb-2">使用限制</h4>
+                                    <ul class="text-gray-400 space-y-1">
+                                        <li>- 不支持复杂控制流混淆</li>
+                                        <li>- 仅处理 JavaScript 代码</li>
+                                    </ul>
+                                </div>
+                                <div class="bg-darker p-4 rounded-lg">
+                                    <h4 class="font-medium mb-2">示例输入</h4>
+                                    <p class="text-gray-400">
+                                        <code>var a="str"; var b="ing"; console.log(a+b);</code>
+                                    </p>
+                                    <h4 class="font-medium mb-2">示例输出</h4>
+                                    <p class="text-accent">
+                                        <code>console.log("string");</code>
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="tool-content hidden" id="ip-check-tool">
+                        <div class="bg-panel backdrop-blur-sm rounded-xl p-6 border border-accent/20 mb-8">
+                            <h3 class="text-xl font-semibold mb-6">IP地址合法检测工具</h3>
+
+                            <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                                <div>
+                                    <label
+                                        class="block text-sm font-medium text-gray-400 mb-2">输入IP地址（支持多个，用换行分隔）</label>
+                                    <textarea id="ip-input"
+                                        class="w-full bg-darker border border-accent/30 rounded-lg p-4 h-40 text-white focus:outline-none focus:ring-2 focus:ring-accent/50 scrollbar-thin"></textarea>
+
+                                    <div class="flex justify-center mt-4">
+                                        <button id="ip-validate"
+                                            class="px-6 py-2 bg-primary hover:bg-primary/90 text-white rounded-lg transition-all">
+                                            检测合法性
+                                        </button>
+                                    </div>
+                                </div>
+
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-400 mb-2">检测结果</label>
+                                    <div id="ip-output"
+                                        class="w-full bg-darker border border-accent/30 rounded-lg p-4 h-40 text-white overflow-auto scrollbar-thin">
+                                    </div>
+
+                                    <div class="flex justify-between mt-4">
+                                        <button id="ip-copy"
+                                            class="px-4 py-2 bg-accent hover:bg-accent/90 text-white rounded-lg transition-all">
+                                            复制结果
+                                        </button>
+                                        <div id="ip-copy-notification"
+                                            class="hidden px-4 py-2 bg-green-500/20 text-green-400 rounded-lg text-sm">
+                                            已复制!
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="bg-panel backdrop-blur-sm rounded-xl p-6 border border-accent/20">
+                            <h3 class="text-xl font-semibold mb-4">关于 IP地址检测</h3>
+                            <p class="text-gray-300 mb-4">
+                                验证IP地址是否符合 IPv4/IPv6 格式规范，并检测是否属于保留地址段（如内网地址、广播地址等）。
+                            </p>
+                            <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mt-6">
+                                <div class="bg-darker p-4 rounded-lg">
+                                    <h4 class="font-medium mb-2">支持类型</h4>
+                                    <ul class="text-gray-400 space-y-1">
+                                        <li>- IPv4（如：192.168.1.1）</li>
+                                        <li>- IPv6（如：2001:0db8:85a3:0000:0000:8a2e:0370:7334）</li>
+                                    </ul>
+                                </div>
+                                <div class="bg-darker p-4 rounded-lg">
+                                    <h4 class="font-medium mb-2">检测内容</h4>
+                                    <ul class="text-gray-400 space-y-1">
+                                        <li>- 格式合法性</li>
+                                        <li>- 保留地址识别（如 127.0.0.0/8、::1 等）</li>
+                                    </ul>
+                                </div>
+                                <div class="bg-darker p-4 rounded-lg">
+                                    <h4 class="font-medium mb-2">示例</h4>
+                                    <p class="text-gray-400">
+                                        输入: <code>192.168.1.256<br>2001:0db8::1</code><br>
+                                        输出: <code>192.168.1.256 (非法，IPv4地址段超出范围)<br>2001:0db8::1 (合法，公网地址)</code>
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <!-- URL转Requests代码工具 -->
+                    <div class="tool-content hidden" id="url-to-requests-tool">
+                        <div class="bg-panel backdrop-blur-sm rounded-xl p-6 border border-accent/20 mb-8">
+                            <h3 class="text-xl font-semibold mb-6">URL转Requests代码</h3>
+
+                            <!-- URL输入 -->
+                            <div class="mb-4">
+                                <label class="block text-sm font-medium text-gray-400 mb-2">URL</label>
+                                <input type="text" id="url-to-requests-input"
+                                    class="w-full bg-darker border border-accent/30 rounded-lg p-4 text-white focus:outline-none focus:ring-2 focus:ring-accent/50"
+                                    placeholder="https://www.example.com/api/data">
+                            </div>
+
+                            <!-- 请求头设置 -->
+                            <div class="mb-4">
+                                <label class="block text-sm font-medium text-gray-400 mb-2">请求头（JSON格式，可选）</label>
+                                <textarea id="headers-to-requests-input"
+                                    class="w-full bg-darker border border-accent/30 rounded-lg p-4 h-32 text-white focus:outline-none focus:ring-2 focus:ring-accent/50 font-mono"
+                                    placeholder='{"User-Agent": "Mozilla/5.0", "Accept": "application/json"}'>
+{
+  "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/136.0.0.0 Safari/537.36",
+  "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9"
+}
+            </textarea>
+                            </div>
+
+                            <!-- 请求方法选择 -->
+                            <div class="mb-4">
+                                <label class="block text-sm font-medium text-gray-400 mb-2">请求方法</label>
+                                <div class="flex space-x-2">
+                                    <button
+                                        class="request-method-btn active px-3 py-1 bg-primary/20 text-primary rounded"
+                                        data-method="GET">GET</button>
+                                    <button
+                                        class="request-method-btn px-3 py-1 bg-darker hover:bg-primary/20 text-white rounded"
+                                        data-method="POST">POST</button>
+                                    <button
+                                        class="request-method-btn px-3 py-1 bg-darker hover:bg-primary/20 text-white rounded"
+                                        data-method="PUT">PUT</button>
+                                    <button
+                                        class="request-method-btn px-3 py-1 bg-darker hover:bg-primary/20 text-white rounded"
+                                        data-method="DELETE">DELETE</button>
+                                </div>
+                            </div>
+
+                            <!-- 生成按钮 -->
+                            <button id="generate-requests-code"
+                                class="px-6 py-2 bg-primary hover:bg-primary/90 text-white rounded-lg transition-all mb-4">
+                                生成代码
+                            </button>
+
+                            <!-- 代码输出 -->
+                            <div>
+                                <label class="block text-sm font-medium text-gray-400 mb-2">生成的代码</label>
+                                <div id="requests-code-output"
+                                    class="w-full bg-darker border border-accent/30 rounded-lg p-4 h-40 text-white overflow-auto scrollbar-thin font-mono">
+                                    # 生成的 requests 代码将显示在这里
+                                </div>
+                            </div>
+
+                            <!-- 复制按钮 -->
+                            <button id="copy-requests-code"
+                                class="mt-4 px-4 py-2 bg-accent hover:bg-accent/90 text-white rounded-lg transition-all">
+                                复制代码
+                            </button>
+                            <div id="copy-requests-notification"
+                                class="hidden mt-4 px-4 py-2 bg-green-500/20 text-green-400 rounded-lg text-sm">
+                                已复制到剪贴板!
+                            </div>
+                        </div>
+
+                        <div class="bg-panel backdrop-blur-sm rounded-xl p-6 border border-accent/20">
+                            <h3 class="text-xl font-semibold mb-4">使用说明</h3>
+                            <p class="text-gray-300 mb-4">
+                                输入URL和请求头（JSON格式），选择请求方法，点击"生成代码"将自动生成对应的Python requests代码模板。
+                            </p>
+                            <div class="bg-darker p-4 rounded-lg">
+                                <h4 class="font-medium mb-2">示例</h4>
+                                <p class="text-gray-400 text-sm">输入:</p>
+                                <pre class="text-accent text-xs mt-2 mb-3">URL: https://api.example.com/data
+请求头: {"Authorization": "Bearer token123"}</pre>
+                                <p class="text-gray-400 text-sm">生成的代码:</p>
+                                <pre class="text-accent text-xs mt-2">import requests
+
+url = "https://api.example.com/data"
+headers = {
+    "Authorization": "Bearer token123"
+}
+
+response = requests.get(url, headers=headers)
+print(response.text)</pre>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="tool-content hidden" id="json-tool">
+                        <div class="bg-panel backdrop-blur-sm rounded-xl p-6 border border-accent/20 mb-8">
+                            <h3 class="text-xl font-semibold mb-6">JSON 格式化工具</h3>
+
+                            <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-400 mb-2">输入 JSON</label>
+                                    <textarea id="json-input"
+                                        class="w-full bg-darker border border-accent/30 rounded-lg p-4 h-40 text-white focus:outline-none focus:ring-2 focus:ring-accent/50 scrollbar-thin font-mono"></textarea>
+
+                                    <div class="flex space-x-2 mt-4">
+                                        <button id="json-format"
+                                            class="px-4 py-2 bg-primary hover:bg-primary/90 text-white rounded-lg transition-all flex-1">
+                                            格式化
+                                        </button>
+                                        <button id="json-minify"
+                                            class="px-4 py-2 bg-secondary hover:bg-secondary/90 text-white rounded-lg transition-all flex-1">
+                                            压缩
+                                        </button>
+                                        <button id="json-clear"
+                                            class="px-4 py-2 bg-darker hover:bg-darker/80 text-white rounded-lg transition-all">
+                                            清空
+                                        </button>
+                                    </div>
+                                </div>
+
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-400 mb-2">格式化结果</label>
+                                    <div id="json-output"
+                                        class="w-full bg-darker border border-accent/30 rounded-lg p-4 h-40 text-white overflow-auto scrollbar-thin font-mono">
+                                    </div>
+
+                                    <div class="flex justify-between mt-4">
+                                        <button id="json-copy"
+                                            class="px-4 py-2 bg-accent hover:bg-accent/90 text-white rounded-lg transition-all">
+                                            复制结果
+                                        </button>
+                                        <div id="json-copy-notification"
+                                            class="hidden px-4 py-2 bg-green-500/20 text-green-400 rounded-lg text-sm">
+                                            已复制!
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="bg-panel backdrop-blur-sm rounded-xl p-6 border border-accent/20">
+                            <h3 class="text-xl font-semibold mb-4">关于 JSON 格式化</h3>
+                            <p class="text-gray-300 mb-4">JSON（JavaScript Object
+                                Notation）是一种轻量级的数据交换格式，易于人类阅读和编写，同时也易于机器解析和生成。JSON 格式化工具可以将压缩的、难以阅读的 JSON
+                                文本转换为格式化的、具有缩进和换行的易读格式，也可以将格式化的 JSON 压缩为最小尺寸。</p>
+                            <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mt-6">
+                                <div class="bg-darker p-4 rounded-lg">
+                                    <h4 class="font-medium mb-2">用途</h4>
+                                    <ul class="text-gray-400 space-y-1">
+                                        <li>- 调试 API 响应</li>
+                                        <li>- 编辑配置文件</li>
+                                        <li>- 验证 JSON 格式</li>
+                                    </ul>
+                                </div>
+                                <div class="bg-darker p-4 rounded-lg">
+                                    <h4 class="font-medium mb-2">特点</h4>
+                                    <ul class="text-gray-400 space-y-1">
+                                        <li>- 标准缩进格式</li>
+                                        <li>- 语法高亮显示</li>
+                                        <li>- 错误检查</li>
+                                    </ul>
+                                </div>
+                                <div class="bg-darker p-4 rounded-lg">
+                                    <h4 class="font-medium mb-2">示例</h4>
+                                    <p class="text-gray-400">压缩 JSON:</p>
+                                    <p class="text-accent">{"name":"John","age":30}</p>
+                                    <p class="text-gray-400 mt-2">格式化后:</p>
+                                    <pre class="text-accent">{
+  "name": "John",
+  "age": 30
+}</pre>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- 网络安全页面 -->
+                <section id="security-page" class="page-content hidden">
+                    <div class="mb-8">
+                        <h1 class="text-[clamp(1.5rem,3vw,2.5rem)] font-bold mb-2">网络安全工具</h1>
+                        <p class="text-gray-400">保护您的数据和系统安全的工具</p>
+                    </div>
+
+                    <div class="bg-panel backdrop-blur-sm rounded-xl p-6 border border-accent/20">
+                        <h3 class="text-xl font-semibold mb-4">即将推出</h3>
+                        <p class="text-gray-300">我们正在开发一系列强大的网络安全工具，包括端口扫描器、密码生成器、安全漏洞检测等功能。敬请期待！</p>
+                    </div>
+                </section>
+
+                <!-- 教程页面 -->
+                <section id="tutorials-page" class="page-content hidden">
+                    <div class="mb-8">
+                        <h1 class="text-[clamp(1.5rem,3vw,2.5rem)] font-bold mb-2">教程与文档</h1>
+                        <p class="text-gray-400">学习如何使用我们的工具和技术指南</p>
+                    </div>
+
+                    <div class="bg-panel backdrop-blur-sm rounded-xl p-6 border border-accent/20"
+                        id="articles-container">
+                        <div class="p-6">
+                            <h3 class="text-xl font-semibold mb-2 group-hover:text-accent transition-colors">MD5加密工具使用指南
+                            </h3>
+                            <p class="text-gray-400 mb-4 line-clamp-3">详细介绍如何使用MD5加密工具进行文本加密、文件校验，以及常见问题解答。</p>
+                            <div class="flex items-center justify-between">
+                                <div class="flex items-center">
+                                    <img src="https://picsum.photos/id/1001/40/40" alt="作者头像"
+                                        class="w-8 h-8 rounded-full mr-2">
+                                    <span class="text-sm text-gray-400">作者：技术达人</span>
+                                </div>
+                                <span class="text-xs text-gray-400">2025-05-20</span>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+            </div>
+        </main>
+    </div>
+
+    <!-- 粒子效果库 -->
+    <script src="https://cdn.jsdelivr.net/particles.js/2.0.0/particles.min.js"></script>
+    <script>
+        // 粒子背景配置
+        particlesJS("particles-js", {
+            particles: {
+                number: { value: 80, density: { enable: true, value_area: 800 } },
+                color: { value: "#00F5FF" },
+                shape: { type: "circle" },
+                opacity: { value: 0.5, random: true },
+                size: { value: 3, random: true },
+                line_linked: {
+                    enable: true,
+                    distance: 150,
+                    color: "#00F5FF",
+                    opacity: 0.2,
+                    width: 1
+                },
+                move: {
+                    enable: true,
+                    speed: 1,
+                    direction: "none",
+                    random: true,
+                    straight: false,
+                    out_mode: "out",
+                    bounce: false
+                }
+            },
+            interactivity: {
+                detect_on: "canvas",
+                events: {
+                    onhover: { enable: true, mode: "grab" },
+                    onclick: { enable: true, mode: "push" },
+                    resize: true
+                },
+                modes: {
+                    grab: { distance: 140, line_linked: { opacity: 0.5 } },
+                    push: { particles_nb: 3 }
+                }
+            },
+            retina_detect: true
+        });
+
+        // 导航栏滚动效果
+        const navbar = document.getElementById('navbar');
+        window.addEventListener('scroll', () => {
+            if (window.scrollY > 50) {
+                navbar.classList.add('bg-darker', 'shadow-lg');
+                navbar.classList.remove('bg-transparent');
+            } else {
+                navbar.classList.remove('bg-darker', 'shadow-lg');
+                navbar.classList.add('bg-transparent');
+            }
+        });
+
+        // 移动端菜单
+        const mobileMenuButton = document.getElementById('mobile-menu-button');
+        const sidebar = document.getElementById('sidebar');
+        const mainContent = document.querySelector('main');
+
+        mobileMenuButton.addEventListener('click', () => {
+            sidebar.classList.toggle('-translate-x-full');
+            if (sidebar.classList.contains('-translate-x-full')) {
+                mainContent.classList.remove('ml-64');
+                mainContent.classList.add('ml-0');
+            } else {
+                mainContent.classList.remove('ml-0');
+                mainContent.classList.add('ml-64');
+            }
+        });
+
+        // 页面切换
+        const navLinks = document.querySelectorAll('.nav-link');
+        const pages = document.querySelectorAll('.page-content');
+
+        navLinks.forEach(link => {
+            link.addEventListener('click', (e) => {
+                e.preventDefault();
+
+                // 移除所有活动状态
+                navLinks.forEach(l => l.classList.remove('active', 'bg-primary/20'));
+
+                // 添加当前活动状态
+                link.classList.add('active', 'bg-primary/20');
+
+                // 获取目标页面ID
+                const targetId = link.getAttribute('href').substring(1) + '-page';
+
+                // 隐藏所有页面
+                pages.forEach(page => page.classList.add('hidden'));
+
+                // 显示目标页面
+                const targetPage = document.getElementById(targetId);
+                if (targetPage) {
+                    targetPage.classList.remove('hidden');
+                }
+
+                // 移动端点击导航后关闭菜单
+                if (window.innerWidth < 768) {
+                    sidebar.classList.add('-translate-x-full');
+                    mainContent.classList.remove('ml-64');
+                    mainContent.classList.add('ml-0');
+                }
+            });
+        });
+
+        // 工具切换
+        const toolTabs = document.querySelectorAll('.tool-tab');
+        const toolContents = document.querySelectorAll('.tool-content');
+
+        toolTabs.forEach(tab => {
+            tab.addEventListener('click', () => {
+                // 移除所有活动状态
+                toolTabs.forEach(t => {
+                    t.classList.remove('active', 'bg-primary');
+                    t.classList.add('bg-darker', 'hover:bg-primary/20');
+                });
+
+                // 添加当前活动状态
+                tab.classList.add('active', 'bg-primary');
+                tab.classList.remove('bg-darker', 'hover:bg-primary/20');
+
+                // 获取目标工具ID
+                const targetTool = tab.getAttribute('data-tool') + '-tool';
+
+                // 隐藏所有工具内容
+                toolContents.forEach(content => content.classList.add('hidden'));
+
+                // 显示目标工具内容
+                const targetContent = document.getElementById(targetTool);
+                if (targetContent) {
+                    targetContent.classList.remove('hidden');
+                }
+            });
+        });
+
+        // MD5 工具功能
+        document.getElementById('md5-encrypt').addEventListener('click', () => {
+            const input = document.getElementById('md5-input').value;
+            if (!input) {
+                alert('请输入需要加密的文本');
+                return;
+            }
+
+            // 简单的MD5实现 (注意：这不是真正的MD5算法，仅用于演示)
+            // 实际项目中应该使用专门的加密库
+            const md5Output = document.getElementById('md5-output');
+            md5Output.textContent = md5(input);
+        });
+
+        document.getElementById('md5-clear').addEventListener('click', () => {
+            document.getElementById('md5-input').value = '';
+            document.getElementById('md5-output').textContent = '';
+        });
+
+        document.getElementById('md5-copy').addEventListener('click', () => {
+            const output = document.getElementById('md5-output').textContent;
+            if (!output) return;
+
+            navigator.clipboard.writeText(output).then(() => {
+                const notification = document.getElementById('md5-copy-notification');
+                notification.classList.remove('hidden');
+                setTimeout(() => {
+                    notification.classList.add('hidden');
+                }, 2000);
+            });
+        });
+
+        // Base64 工具功能
+        document.getElementById('base64-encode').addEventListener('click', () => {
+            const input = document.getElementById('base64-input').value;
+            if (!input) {
+                alert('请输入需要编码的文本');
+                return;
+            }
+
+            const encoded = btoa(unescape(encodeURIComponent(input)));
+            document.getElementById('base64-output').textContent = encoded;
+        });
+
+        document.getElementById('base64-decode').addEventListener('click', () => {
+            const input = document.getElementById('base64-input').value;
+            if (!input) {
+                alert('请输入需要解码的文本');
+                return;
+            }
+
+            try {
+                const decoded = decodeURIComponent(escape(atob(input)));
+                document.getElementById('base64-output').textContent = decoded;
+            } catch (e) {
+                document.getElementById('base64-output').textContent = '解码失败：无效的Base64格式';
+            }
+        });
+
+        document.getElementById('base64-clear').addEventListener('click', () => {
+            document.getElementById('base64-input').value = '';
+            document.getElementById('base64-output').textContent = '';
+        });
+
+        document.getElementById('base64-copy').addEventListener('click', () => {
+            const output = document.getElementById('base64-output').textContent;
+            if (!output) return;
+
+            navigator.clipboard.writeText(output).then(() => {
+                const notification = document.getElementById('base64-copy-notification');
+                notification.classList.remove('hidden');
+                setTimeout(() => {
+                    notification.classList.add('hidden');
+                }, 2000);
+            });
+        });
+
+        // JSON 工具功能
+        document.getElementById('json-format').addEventListener('click', () => {
+            const input = document.getElementById('json-input').value;
+            if (!input) {
+                alert('请输入JSON内容');
+                return;
+            }
+
+            try {
+                const parsed = JSON.parse(input);
+                const formatted = JSON.stringify(parsed, null, 2);
+                document.getElementById('json-output').textContent = formatted;
+            } catch (e) {
+                document.getElementById('json-output').textContent = 'JSON格式错误：' + e.message;
+            }
+        });
+
+        document.getElementById('json-minify').addEventListener('click', () => {
+            const input = document.getElementById('json-input').value;
+            if (!input) {
+                alert('请输入JSON内容');
+                return;
+            }
+
+            try {
+                const parsed = JSON.parse(input);
+                const minified = JSON.stringify(parsed);
+                document.getElementById('json-output').textContent = minified;
+            } catch (e) {
+                document.getElementById('json-output').textContent = 'JSON格式错误：' + e.message;
+            }
+        });
+
+        document.getElementById('json-clear').addEventListener('click', () => {
+            document.getElementById('json-input').value = '';
+            document.getElementById('json-output').textContent = '';
+        });
+
+        document.getElementById('json-copy').addEventListener('click', () => {
+            const output = document.getElementById('json-output').textContent;
+            if (!output) return;
+
+            navigator.clipboard.writeText(output).then(() => {
+                const notification = document.getElementById('json-copy-notification');
+                notification.classList.remove('hidden');
+                setTimeout(() => {
+                    notification.classList.add('hidden');
+                }, 2000);
+            });
+        });
+
+        // 简单的MD5实现 (仅用于演示，非真正的MD5)
+        function md5(string) {
+            // 这里使用了一个简单的哈希函数作为演示
+            // 实际项目中应该使用专门的加密库
+            let hash = 0;
+            for (let i = 0; i < string.length; i++) {
+                const char = string.charCodeAt(i);
+                hash = ((hash << 5) - hash) + char;
+                hash |= 0; // Convert to 32bit integer
+            }
+
+            let hex = ((hash >>> 0) + 0x100000000).toString(16).substr(-8);
+
+            // 生成一个更长的"MD5类似"的哈希值
+            let extendedHash = '';
+            for (let i = 0; i < 4; i++) {
+                extendedHash += hex;
+            }
+
+            return extendedHash;
+        }
+        // IP地址合法性检测
+        document.getElementById('ip-validate').addEventListener('click', () => {
+            const input = document.getElementById('ip-input').value;
+            if (!input) {
+                alert('请输入IP地址');
+                return;
+            }
+
+            const ipList = input.split('\n').map(ip => ip.trim()).filter(ip => ip);
+            const result = [];
+
+            ipList.forEach(ip => {
+                let status = '合法';
+                // 检测IPv4格式
+                const ipv4Regex = /^(\d{1,3}\.){3}\d{1,3}$/;
+                // 检测IPv6格式（简化正则）
+                const ipv6Regex = /^([0-9A-Fa-f]{1,4}:){7}[0-9A-Fa-f]{1,4}$/;
+
+                if (ipv4Regex.test(ip)) {
+                    const parts = ip.split('.').map(part => parseInt(part, 10));
+                    if (parts.some(part => part < 0 || part > 255)) {
+                        status = '非法（IPv4地址段超出范围）';
+                    } else if (ip.startsWith('127.') || ip.startsWith('10.') ||
+                        (ip.startsWith('192.168.') && ip.split('.')[0] === '192' && ip.split('.')[1] === '168')) {
+                        status = `合法（保留地址，常用于${ip.startsWith('127.') ? '本地回环' : '内网'}）`;
+                    }
+                } else if (ipv6Regex.test(ip)) {
+                    if (ip === '::1') {
+                        status = '合法（IPv6本地回环地址）';
+                    } else if (ip.startsWith('fe80::') || ip.startsWith('fc00::')) {
+                        status = '合法（IPv6保留地址，内网使用）';
+                    }
+                } else {
+                    status = '非法（不支持的IP格式）';
+                }
+
+                result.push(`${ip} (${status})`);
+            });
+
+            document.getElementById('ip-output').textContent = result.join('\n');
+        });
+
+        document.getElementById('ip-copy').addEventListener('click', () => {
+            const output = document.getElementById('ip-output').textContent;
+            if (!output) return;
+
+            navigator.clipboard.writeText(output).then(() => {
+                const notification = document.getElementById('ip-copy-notification');
+                notification.classList.remove('hidden');
+                setTimeout(() => {
+                    notification.classList.add('hidden');
+                }, 2000);
+            });
+        });
+        // AST 解混淆功能
+        document.getElementById('ast-deobfuscate').addEventListener('click', () => {
+            const input = document.getElementById('ast-input').value.trim();
+            if (!input) {
+                document.getElementById('ast-output').textContent = '请输入JavaScript代码';
+                return;
+            }
+
+            try {
+                // 解析代码为AST
+                const ast = babelParser.parse(input, {
+                    sourceType: 'module',
+                    plugins: ['jsx', 'typescript']
+                });
+
+                // 解混淆处理
+                babelTraverse.default(ast, {
+                    // 处理字符串拼接
+                    BinaryExpression(path) {
+                        const { node } = path;
+                        if (node.operator === '+' &&
+                            (node.left.type === 'StringLiteral' || node.right.type === 'StringLiteral')) {
+
+                            // 如果两个都是字符串字面量，合并它们
+                            if (node.left.type === 'StringLiteral' && node.right.type === 'StringLiteral') {
+                                path.replaceWith({
+                                    type: 'StringLiteral',
+                                    value: node.left.value + node.right.value
+                                });
+                            }
+                        }
+                    },
+
+                    // 处理数组连接的字符串
+                    CallExpression(path) {
+                        const { node } = path;
+                        if (node.callee.type === 'MemberExpression' &&
+                            node.callee.property.type === 'Identifier' &&
+                            node.callee.property.name === 'join' &&
+                            node.arguments.length === 1 &&
+                            node.arguments[0].type === 'StringLiteral' &&
+                            node.callee.object.type === 'ArrayExpression') {
+
+                            const elements = node.callee.object.elements;
+                            const separator = node.arguments[0].value;
+
+                            // 检查所有元素是否都是字符串字面量
+                            if (elements.every(el => el.type === 'StringLiteral')) {
+                                const joinedValue = elements.map(el => el.value).join(separator);
+                                path.replaceWith({
+                                    type: 'StringLiteral',
+                                    value: joinedValue
+                                });
+                            }
+                        }
+                    }
+                });
+
+                // 生成解混淆后的代码
+                const { code } = babelGenerator.default(ast, {
+                    retainLines: false,
+                    comments: false,
+                    compact: false
+                });
+
+                document.getElementById('ast-output').textContent = code;
+            } catch (error) {
+                document.getElementById('ast-output').textContent = `解析错误: ${error.message}`;
+            }
+        });
+        // 等待DOM加载完成
+        document.addEventListener('DOMContentLoaded', function () {
+            // 初始化所有工具选项卡和内容
+            initToolTabs();
+
+            // 初始化URL转Requests代码工具
+            initUrlToRequestsTool();
+        });
+
+        // 初始化工具选项卡切换功能
+        function initToolTabs() {
+            const toolTabs = document.querySelectorAll('.tool-tab');
+            const toolContents = document.querySelectorAll('.tool-content');
+
+            toolTabs.forEach(tab => {
+                tab.addEventListener('click', () => {
+                    // 移除所有选项卡的活动状态
+                    toolTabs.forEach(t => t.classList.remove('active', 'bg-primary', 'text-white'));
+                    toolTabs.forEach(t => t.classList.add('bg-darker', 'hover:bg-primary/20', 'text-white'));
+
+                    // 添加当前选项卡的活动状态
+                    tab.classList.remove('bg-darker', 'hover:bg-primary/20', 'text-white');
+                    tab.classList.add('active', 'bg-primary', 'text-white');
+
+                    // 隐藏所有工具内容
+                    toolContents.forEach(content => content.classList.add('hidden'));
+
+                    // 显示当前工具内容
+                    const toolId = tab.getAttribute('data-tool');
+                    document.getElementById(`${toolId}-tool`).classList.remove('hidden');
+                });
+            });
+        }
+
+        // 初始化URL转Requests代码工具
+        function initUrlToRequestsTool() {
+            const generateBtn = document.getElementById('generate-requests-code');
+            const copyBtn = document.getElementById('copy-requests-code');
+            const urlInput = document.getElementById('url-to-requests-input');
+            const headersInput = document.getElementById('headers-to-requests-input');
+            const codeOutput = document.getElementById('requests-code-output');
+            const notification = document.getElementById('copy-requests-notification');
+            const methodBtns = document.querySelectorAll('.request-method-btn');
+
+            let selectedMethod = 'GET'; // 默认请求方法
+
+            // 处理请求方法选择
+            methodBtns.forEach(btn => {
+                btn.addEventListener('click', () => {
+                    // 移除所有按钮的活动状态
+                    methodBtns.forEach(b => {
+                        b.classList.remove('active', 'bg-primary/20', 'text-primary');
+                        b.classList.add('bg-darker', 'hover:bg-primary/20', 'text-white');
+                    });
+
+                    // 添加当前按钮的活动状态
+                    btn.classList.remove('bg-darker', 'hover:bg-primary/20', 'text-white');
+                    btn.classList.add('active', 'bg-primary/20', 'text-primary');
+
+                    // 更新选中的请求方法
+                    selectedMethod = btn.getAttribute('data-method');
+                });
+            });
+
+            // 生成代码按钮点击事件
+            generateBtn.addEventListener('click', () => {
+                const url = urlInput.value.trim();
+                let headers = headersInput.value.trim();
+
+                if (!url) {
+                    codeOutput.textContent = "# 错误：请输入URL";
+                    codeOutput.classList.add('text-red-500');
+                    setTimeout(() => {
+                        codeOutput.classList.remove('text-red-500');
+                    }, 2000);
+                    return;
+                }
+
+                // 解析请求头
+                let headersObj = {};
+                try {
+                    if (headers) {
+                        headersObj = JSON.parse(headers);
+                    }
+                } catch (e) {
+                    codeOutput.textContent = "# 错误：请求头格式不是有效的JSON";
+                    codeOutput.classList.add('text-red-500');
+                    setTimeout(() => {
+                        codeOutput.classList.remove('text-red-500');
+                    }, 2000);
+                    return;
+                }
+
+                // 生成代码
+                const code = generateRequestsCode(url, headersObj, selectedMethod);
+                codeOutput.textContent = code;
+            });
+
+            // 复制代码按钮点击事件
+            copyBtn.addEventListener('click', () => {
+                const textToCopy = codeOutput.textContent;
+
+                navigator.clipboard.writeText(textToCopy).then(() => {
+                    // 显示复制成功通知
+                    notification.classList.remove('hidden');
+                    setTimeout(() => {
+                        notification.classList.add('hidden');
+                    }, 2000);
+                }).catch(err => {
+                    console.error('复制失败: ', err);
+                    notification.textContent = "复制失败，请手动复制";
+                    notification.classList.remove('hidden', 'bg-green-500/20', 'text-green-400');
+                    notification.classList.add('bg-red-500/20', 'text-red-400');
+                    setTimeout(() => {
+                        notification.classList.add('hidden');
+                        notification.textContent = "已复制到剪贴板!";
+                        notification.classList.remove('bg-red-500/20', 'text-red-400');
+                        notification.classList.add('bg-green-500/20', 'text-green-400');
+                    }, 3000);
+                });
+            });
+        }
+
+        // 生成Python requests代码
+        function generateRequestsCode(url, headers, method) {
+            let code = "import requests\n\n";
+
+            code += `url = "${url}"\n\n`;
+
+            // 处理请求头
+            if (Object.keys(headers).length > 0) {
+                code += "headers = {\n";
+                for (const [key, value] of Object.entries(headers)) {
+                    code += `    "${key}": "${escapeString(value)}",\n`;
+                }
+                code += "}\n\n";
+            } else {
+                code += "headers = {}\n\n";
+            }
+
+            // 根据请求方法生成不同的代码
+            switch (method) {
+                case 'GET':
+                    code += "response = requests.get(url, headers=headers)\n";
+                    break;
+                case 'POST':
+                    code += "data = {}\n";
+                    code += "response = requests.post(url, headers=headers, data=data)\n";
+                    break;
+                case 'PUT':
+                    code += "data = {}\n";
+                    code += "response = requests.put(url, headers=headers, data=data)\n";
+                    break;
+                case 'DELETE':
+                    code += "response = requests.delete(url, headers=headers)\n";
+                    break;
+            }
+
+            code += "\n# 打印响应内容";
+            code += "\nprint(response.text)";
+
+            return code;
+        }
+
+        // 转义字符串中的特殊字符
+        function escapeString(str) {
+            return str
+                .replace(/\\/g, '\\\\')
+                .replace(/"/g, '\\"')
+                .replace(/\n/g, '\\n')
+                .replace(/\r/g, '\\r')
+                .replace(/\t/g, '\\t');
+        }
+        const _tuichu_ = document.getElementById('_tuichu_')
+        _tuichu_.addEventListener('click', () => {
+            alert('当前为测试版!无需退出!版本号V1.0.0小鱼工具箱,欢迎您的使用!正式版本正在开发中...')
+        })
+        // RSA加密和解密功能
+        document.addEventListener('DOMContentLoaded', () => {
+            const generateKeysBtn = document.getElementById('generate-rsa-keys');
+            const encryptBtn = document.getElementById('encrypt-rsa');
+            const decryptBtn = document.getElementById('decrypt-rsa');
+            const resultArea = document.getElementById('rsa-result');
+
+            // 生成密钥对
+            generateKeysBtn.addEventListener('click', () => {
+                try {
+                    const keyLength = parseInt(document.getElementById('rsa-key-length').value);
+                    const keyPair = KEYUTIL.generateKeypair("RSA", keyLength);
+
+                    const publicKeyPEM = KEYUTIL.getPEM(keyPair.pubKeyObj);
+                    const privateKeyPEM = KEYUTIL.getPEM(keyPair.prvKeyObj, "PKCS8PRV");
+
+                    document.getElementById('public-key-rsa').value = publicKeyPEM;
+                    document.getElementById('private-key-rsa').value = privateKeyPEM;
+                    resultArea.textContent = '密钥对已生成！';
+                } catch (e) {
+                    resultArea.textContent = `生成密钥失败: ${e.message}`;
+                    console.error(e);
+                }
+            });
+
+            // 加密
+            encryptBtn.addEventListener('click', () => {
+                const plainText = document.getElementById('rsa-plaintext').value;
+                const publicKeyPEM = document.getElementById('rsa-public-key-input').value || document.getElementById('public-key-rsa').value;
+
+                if (!plainText || !publicKeyPEM) {
+                    resultArea.textContent = '请输入明文和公钥！';
+                    return;
+                }
+
+                try {
+                    // 解析公钥
+                    const pubKey = KEYUTIL.getKey(publicKeyPEM);
+
+                    // 转换明文为UTF-8字节数组
+                    const plainTextBytes = utoa(plainText);
+
+                    // 使用公钥加密
+                    const encryptedHex = KJUR.jws.JWS.sign(null, { alg: "RS256" }, { data: plainTextBytes }, pubKey);
+
+                    // 转换为Base64格式
+                    const encryptedB64 = hextob64(encryptedHex);
+
+                    document.getElementById('rsa-ciphertext').value = encryptedB64;
+                    resultArea.innerHTML = `加密成功！<br>密文：${encryptedB64}`;
+                } catch (e) {
+                    resultArea.textContent = `加密失败：${e.message}`;
+                    console.error(e);
+                }
+            });
+
+            // 解密
+            decryptBtn.addEventListener('click', () => {
+                const cipherText = document.getElementById('rsa-ciphertext').value;
+                const privateKeyPEM = document.getElementById('rsa-private-key-input').value || document.getElementById('private-key-rsa').value;
+
+                if (!cipherText || !privateKeyPEM) {
+                    resultArea.textContent = '请输入密文和私钥！';
+                    return;
+                }
+
+                try {
+                    // 解析私钥
+                    const prvKey = KEYUTIL.getKey(privateKeyPEM);
+
+                    // 转换Base64密文为十六进制
+                    const cipherTextHex = b64tohex(cipherText);
+
+                    // 构造JWS对象进行解密
+                    const jwsObj = new KJUR.jws.JWS();
+                    jwsObj.init("RS256", { alg: "RS256" });
+                    jwsObj.parseJWS(cipherText);
+
+                    // 解密
+                    const decryptedBytes = jwsObj.decrypt(prvKey);
+
+                    // 转换为字符串
+                    const decryptedText = atob(decryptedBytes);
+
+                    resultArea.innerHTML = `解密成功！<br>明文：${decryptedText}`;
+                } catch (e) {
+                    resultArea.textContent = `解密失败：${e.message}`;
+                    console.error(e);
+                }
+            });
+
+            // 复制密钥功能
+            document.getElementById('copy-public-rsa').addEventListener('click', () =>
+                copyToClipboard('public-key-rsa')
+            );
+            document.getElementById('copy-private-rsa').addEventListener('click', () =>
+                copyToClipboard('private-key-rsa')
+            );
+        });
+
+        // 通用复制函数
+        function copyToClipboard(id) {
+            const el = document.getElementById(id);
+            el.select();
+
+            // 现代复制API
+            if (navigator.clipboard) {
+                navigator.clipboard.writeText(el.value)
+                    .then(() => alert('已复制到剪贴板！'))
+                    .catch(err => alert('复制失败: ' + err));
+            } else {
+                // 旧版API兼容
+                document.execCommand('copy');
+                alert('已复制到剪贴板！');
+            }
+        }
+        var _logion_span = document.getElementsByClassName('nav-link flex items-center space-x-3 px-4 py-3 rounded-lg text-white hover:bg-primary/20 transition-all span')[0]
+        _logion_span.addEventListener('click', () => {
+            window.location.href = '../public/index2.html'
+        })
+        // 初始化网络安全工具选项卡切换
+function initSecurityTools() {
+    const toolTabs = document.querySelectorAll('.security-tool-tab');
+    const toolContents = document.querySelectorAll('.security-tool-content');
+
+    toolTabs.forEach(tab => {
+        tab.addEventListener('click', () => {
+            // 移除所有选项卡的活动状态
+            toolTabs.forEach(t => t.classList.remove('active', 'bg-primary'));
+            toolTabs.forEach(t => t.classList.add('bg-darker', 'hover:bg-primary/20'));
+
+            // 添加当前选项卡的活动状态
+            tab.classList.add('active', 'bg-primary');
+            tab.classList.remove('bg-darker', 'hover:bg-primary/20');
+
+            // 隐藏所有工具内容
+            toolContents.forEach(content => content.classList.add('hidden'));
+
+            // 显示当前工具内容
+            const toolId = tab.getAttribute('data-tool');
+            document.getElementById(`${toolId}-tool`).classList.remove('hidden');
+        });
+    });
+
+    // 初始化端口扫描器
+    initPortScanner();
+    
+    // 初始化密码生成器
+    initPasswordGenerator();
+}
+
+// 初始化端口扫描器
+function initPortScanner() {
+    const startBtn = document.getElementById('start-port-scan');
+    const stopBtn = document.getElementById('stop-port-scan');
+    const hostInput = document.getElementById('port-scan-host');
+    const startPortInput = document.getElementById('port-scan-start');
+    const endPortInput = document.getElementById('port-scan-end');
+    const resultsDiv = document.getElementById('port-scan-results');
+    const statusDiv = document.getElementById('port-scan-status');
+    const clearBtn = document.getElementById('clear-port-results');
+    
+    let isScanning = false;
+    let scanTimeout;
+    
+    // 开始扫描
+    startBtn.addEventListener('click', () => {
+        const host = hostInput.value.trim();
+        const startPort = parseInt(startPortInput.value);
+        const endPort = parseInt(endPortInput.value);
+        
+        if (!host) {
+            alert('请输入目标主机');
+            return;
+        }
+        
+        if (startPort < 1 || endPort > 65535 || startPort > endPort) {
+            alert('请输入有效的端口范围');
+            return;
+        }
+        
+        isScanning = true;
+        startBtn.disabled = true;
+        stopBtn.disabled = false;
+        resultsDiv.textContent = `开始扫描 ${host} 从端口 ${startPort} 到 ${endPort}...`;
+        statusDiv.textContent = '状态: 扫描中...';
+        
+        // 简单的端口扫描实现（受浏览器安全限制，功能有限）
+        let currentPort = startPort;
+        
+        function scanNextPort() {
+            if (!isScanning || currentPort > endPort) {
+                finishScan();
+                return;
+            }
+            
+            // 创建一个Image对象尝试连接端口
+            const img = new Image();
+            const startTime = Date.now();
+            
+            img.onload = function() {
+                addResult(`${currentPort}/TCP 开放 (快速响应)`, 'text-green-400');
+                scanNextPort();
+            };
+            
+            img.onerror = function() {
+                // 超时或连接被拒绝，检查耗时
+                const elapsed = Date.now() - startTime;
+                if (elapsed > 1500) {
+                    // 可能是开放端口但无响应
+                    addResult(`${currentPort}/TCP 可能开放 (无响应)`, 'text-yellow-400');
+                } else {
+                    // 端口关闭
+                    addResult(`${currentPort}/TCP 关闭`, 'text-gray-400');
+                }
+                scanNextPort();
+            };
+            
+            // 设置超时
+            setTimeout(() => {
+                // 超时处理
+                addResult(`${currentPort}/TCP 关闭 (超时)`, 'text-gray-400');
+                scanNextPort();
+            }, 2000);
+            
+            // 尝试连接
+            try {
+                img.src = `http://${host}:${currentPort}/favicon.ico?t=${Date.now()}`;
+            } catch (e) {
+                addResult(`${currentPort}/TCP 错误: ${e.message}`, 'text-red-400');
+                scanNextPort();
+            }
+            
+            statusDiv.textContent = `状态: 正在扫描 ${currentPort}/${endPort}`;
+            currentPort++;
+        }
+        
+        // 开始扫描
+        scanNextPort();
+    });
+    
+    // 停止扫描
+    stopBtn.addEventListener('click', () => {
+        isScanning = false;
+        clearTimeout(scanTimeout);
+        finishScan();
+    });
+    
+    // 清空结果
+    clearBtn.addEventListener('click', () => {
+        resultsDiv.textContent = '准备就绪，请输入目标主机并点击"开始扫描"';
+    });
+    
+    // 添加扫描结果
+    function addResult(text, className) {
+        const line = document.createElement('div');
+        line.className = className;
+        line.textContent = text;
+        resultsDiv.appendChild(line);
+        resultsDiv.scrollTop = resultsDiv.scrollHeight;
+    }
+    
+    // 完成扫描
+    function finishScan() {
+        isScanning = false;
+        startBtn.disabled = false;
+        stopBtn.disabled = true;
+        statusDiv.textContent = '状态: 已完成';
+        addResult('扫描完成！', 'text-accent');
+    }
+}
+
+// 初始化密码生成器
+function initPasswordGenerator() {
+    const lengthSlider = document.getElementById('password-length');
+    const lengthValue = document.getElementById('password-length-value');
+    const includeUppercase = document.getElementById('include-uppercase');
+    const includeLowercase = document.getElementById('include-lowercase');
+    const includeNumbers = document.getElementById('include-numbers');
+    const includeSymbols = document.getElementById('include-symbols');
+    const excludeSimilar = document.getElementById('exclude-similar');
+    const excludeAmbiguous = document.getElementById('exclude-ambiguous');
+    const generateBtn = document.getElementById('generate-password');
+    const passwordInput = document.getElementById('generated-password');
+    const copyBtn = document.getElementById('copy-password');
+    
+    // 更新密码长度显示
+    lengthSlider.addEventListener('input', () => {
+        lengthValue.textContent = lengthSlider.value;
+    });
+    
+    // 生成密码
+    generateBtn.addEventListener('click', () => {
+        const length = parseInt(lengthSlider.value);
+        
+        // 至少选择一种字符类型
+        if (!includeUppercase.checked && 
+            !includeLowercase.checked && 
+            !includeNumbers.checked && 
+            !includeSymbols.checked) {
+            alert('请至少选择一种字符类型');
+            return;
+        }
+        
+        // 构建字符集
+        let charset = '';
+        if (includeUppercase.checked) charset += 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
+        if (includeLowercase.checked) charset += 'abcdefghijklmnopqrstuvwxyz';
+        if (includeNumbers.checked) charset += '0123456789';
+        if (includeSymbols.checked) charset += '!@#$%^&*()_+~`|}{[]:;?><,./-=';
+        
+        // 排除易混淆字符
+        if (excludeSimilar.checked) {
+            charset = charset.replace(/[il1Lo0O]/g, '');
+        }
+        
+        // 排除可能引起歧义的字符
+        if (excludeAmbiguous.checked) {
+            charset = charset.replace(/[{}\[\]()\/\\'"`,;:.]/g, '');
+        }
+        
+        // 生成密码
+        let password = '';
+        for (let i = 0; i < length; i++) {
+            const randomIndex = Math.floor(Math.random() * charset.length);
+            password += charset.charAt(randomIndex);
+        }
+        
+        // 显示密码
+        passwordInput.value = password;
+        
+        // 计算密码强度
+        calculatePasswordStrength(password);
+    });
+    
+    // 复制密码
+    copyBtn.addEventListener('click', () => {
+        if (passwordInput.value) {
+            passwordInput.select();
+            document.execCommand('copy');
+            
+            // 显示复制成功提示
+            copyBtn.innerHTML = '<i class="fa fa-check"></i>';
+            setTimeout(() => {
+                copyBtn.innerHTML = '<i class="fa fa-copy"></i>';
+            }, 2000);
+        }
+    });
+    
+    // 计算密码强度
+    function calculatePasswordStrength(password) {
+        // 简单的密码强度评估
+        let strength = 0;
+        
+        // 长度因素
+        strength += Math.min(password.length, 20) * 4;
+        
+        // 包含小写字母
+        if (/[a-z]/.test(password)) strength += 10;
+        
+        // 包含大写字母
+        if (/[A-Z]/.test(password)) strength += 10;
+        
+        // 包含数字
+        if (/[0-9]/.test(password)) strength += 10;
+        
+        // 包含符号
+        if (/[^A-Za-z0-9]/.test(password)) strength += 15;
+        
+        // 字符多样性
+        const charTypes = (/\d/.test(password)?1:0) + 
+                          (/[a-z]/.test(password)?1:0) + 
+                          (/[A-Z]/.test(password)?1:0) + 
+                          (/[^A-Za-z0-9]/.test(password)?1:0);
+        strength += charTypes * 10;
+        
+        // 重复字符惩罚
+        const repeats = password.length - new Set(password).size;
+        strength -= repeats * 2;
+        
+        // 连续字符惩罚
+        const consecutive = (password.match(/(.)\1+/g) || []).reduce((sum, match) => sum + match.length - 1, 0);
+        strength -= consecutive * 3;
+        
+        // 限制最大值
+        strength = Math.min(strength, 100);
+        
+        // 显示强度
+        const strengthMeter = document.getElementById('password-strength-meter');
+        const strengthText = document.getElementById('password-strength-text');
+        
+        if (!strengthMeter) {
+            // 创建强度指示器
+            const strengthContainer = document.createElement('div');
+            strengthContainer.className = 'mt-4';
+            strengthContainer.innerHTML = `
+                <div class="flex justify-between mb-1">
+                    <span class="text-sm text-gray-400">密码强度</span>
+                    <span id="password-strength-text" class="text-sm"></span>
+                </div>
+                <div class="h-2 bg-darker rounded-full overflow-hidden">
+                    <div id="password-strength-meter" class="h-full transition-all duration-500"></div>
+                </div>
+            `;
+            passwordInput.parentNode.after(strengthContainer);
+        }
+        
+        // 更新强度显示
+        let strengthClass = 'bg-red-500';
+        let strengthLabel = '弱';
+        
+        if (strength >= 80) {
+            strengthClass = 'bg-green-500';
+            strengthLabel = '强';
+        } else if (strength >= 50) {
+            strengthClass = 'bg-yellow-500';
+            strengthLabel = '中';
+        }
+        
+        strengthMeter.className = `h-full ${strengthClass} transition-all duration-500`;
+        strengthMeter.style.width = `${strength}%`;
+        strengthText.textContent = strengthLabel;
+    }
+}
+
+// 在DOM加载完成后初始化安全工具
+document.addEventListener('DOMContentLoaded', () => {
+    // 初始化其他功能...
+    
+    // 初始化网络安全工具
+    initSecurityTools();
+});    
+        // 设置在线编辑器的地方...
+    </script>
+</body>
+
+</html>
