@@ -13,7 +13,6 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jsrsasign/10.5.2/jsrsasign-all-min.js"></script>
     <script src="./conten_js/rsa-utils.js"></script>
     <script src="./conten_js/des.js"></script>
-    <script src="./conten_js/public_user/user.js"></script>
     <script src="./conten_js/public_user/log_speak/log.js"></script>
     <script>
         tailwind.config = {
@@ -151,10 +150,10 @@
                             </a>
                         </li>
                         <li>
-                            <a href="#blog"
-                                class="nav-link flex items-center space-x-3 px-4 py-3 rounded-lg text-white hover:bg-primary/20 transition-all">
-                                <i class="fa fa-rss w-5 text-center"></i>
-                                <span>博客</span>
+                            <a href="./HTTP_3.html"
+                                class="nav-link flex items-center space-x-3 px-4 py-3 rounded-lg text-white hover:bg-primary/20 transition-all HTTP_3">
+                                <i class="fa fa-rss w-5 text-center "></i>
+                                <span>HTTP/3/QUIC</span>
                             </a>
                         </li>
                         <li class="mt-6">
@@ -427,9 +426,14 @@
                                 data-tool="password-generator">
                                 密码生成器
                             </button>
+                            <button
+                                class="security-tool-tab px-4 py-2 rounded-lg bg-darker hover:bg-primary/20 text-white liuliangbao"
+                                data-tool="">
+                                HTTP/3流量包分析
+                            </button>
                         </div>
                     </div>
-
+                    
                     <!-- 端口扫描器 -->
                     <div class="security-tool-content" id="port-scan-tool">
                         <div class="bg-panel backdrop-blur-sm rounded-xl p-6 border border-accent/20 mb-8">
@@ -1149,11 +1153,15 @@ print(response.text)</pre>
 
                 <!-- 教程页面 -->
                 <section id="tutorials-page" class="page-content hidden">
+                     <a href="./Page_size.html" id="new-article-btn" style="float: right;width: 150px;letter-spacing: 2px;text-align: center;"
+                        class="px-6 py-2 bg-primary hover:bg-primary/80 rounded-lg text-white transition-colors duration-300 flex items-center">
+                        <i class="fa fa-plus mr-2"></i> 新建文章
+                    </a>
                     <div class="mb-8">
                         <h1 class="text-[clamp(1.5rem,3vw,2.5rem)] font-bold mb-2">教程与文档</h1>
                         <p class="text-gray-400">学习如何使用我们的工具和技术指南</p>
                     </div>
-
+                   
                     <div class="bg-panel backdrop-blur-sm rounded-xl p-6 border border-accent/20"
                         id="articles-container">
                         <div class="p-6">
@@ -1883,281 +1891,281 @@ print(response.text)</pre>
             window.location.href = '../public/index2.html'
         })
         // 初始化网络安全工具选项卡切换
-function initSecurityTools() {
-    const toolTabs = document.querySelectorAll('.security-tool-tab');
-    const toolContents = document.querySelectorAll('.security-tool-content');
+        function initSecurityTools() {
+            const toolTabs = document.querySelectorAll('.security-tool-tab');
+            const toolContents = document.querySelectorAll('.security-tool-content');
 
-    toolTabs.forEach(tab => {
-        tab.addEventListener('click', () => {
-            // 移除所有选项卡的活动状态
-            toolTabs.forEach(t => t.classList.remove('active', 'bg-primary'));
-            toolTabs.forEach(t => t.classList.add('bg-darker', 'hover:bg-primary/20'));
+            toolTabs.forEach(tab => {
+                tab.addEventListener('click', () => {
+                    // 移除所有选项卡的活动状态
+                    toolTabs.forEach(t => t.classList.remove('active', 'bg-primary'));
+                    toolTabs.forEach(t => t.classList.add('bg-darker', 'hover:bg-primary/20'));
 
-            // 添加当前选项卡的活动状态
-            tab.classList.add('active', 'bg-primary');
-            tab.classList.remove('bg-darker', 'hover:bg-primary/20');
+                    // 添加当前选项卡的活动状态
+                    tab.classList.add('active', 'bg-primary');
+                    tab.classList.remove('bg-darker', 'hover:bg-primary/20');
 
-            // 隐藏所有工具内容
-            toolContents.forEach(content => content.classList.add('hidden'));
+                    // 隐藏所有工具内容
+                    toolContents.forEach(content => content.classList.add('hidden'));
 
-            // 显示当前工具内容
-            const toolId = tab.getAttribute('data-tool');
-            document.getElementById(`${toolId}-tool`).classList.remove('hidden');
-        });
-    });
+                    // 显示当前工具内容
+                    const toolId = tab.getAttribute('data-tool');
+                    document.getElementById(`${toolId}-tool`).classList.remove('hidden');
+                });
+            });
 
-    // 初始化端口扫描器
-    initPortScanner();
-    
-    // 初始化密码生成器
-    initPasswordGenerator();
-}
+            // 初始化端口扫描器
+            initPortScanner();
 
-// 初始化端口扫描器
-function initPortScanner() {
-    const startBtn = document.getElementById('start-port-scan');
-    const stopBtn = document.getElementById('stop-port-scan');
-    const hostInput = document.getElementById('port-scan-host');
-    const startPortInput = document.getElementById('port-scan-start');
-    const endPortInput = document.getElementById('port-scan-end');
-    const resultsDiv = document.getElementById('port-scan-results');
-    const statusDiv = document.getElementById('port-scan-status');
-    const clearBtn = document.getElementById('clear-port-results');
-    
-    let isScanning = false;
-    let scanTimeout;
-    
-    // 开始扫描
-    startBtn.addEventListener('click', () => {
-        const host = hostInput.value.trim();
-        const startPort = parseInt(startPortInput.value);
-        const endPort = parseInt(endPortInput.value);
-        
-        if (!host) {
-            alert('请输入目标主机');
-            return;
+            // 初始化密码生成器
+            initPasswordGenerator();
         }
-        
-        if (startPort < 1 || endPort > 65535 || startPort > endPort) {
-            alert('请输入有效的端口范围');
-            return;
-        }
-        
-        isScanning = true;
-        startBtn.disabled = true;
-        stopBtn.disabled = false;
-        resultsDiv.textContent = `开始扫描 ${host} 从端口 ${startPort} 到 ${endPort}...`;
-        statusDiv.textContent = '状态: 扫描中...';
-        
-        // 简单的端口扫描实现（受浏览器安全限制，功能有限）
-        let currentPort = startPort;
-        
-        function scanNextPort() {
-            if (!isScanning || currentPort > endPort) {
-                finishScan();
-                return;
-            }
-            
-            // 创建一个Image对象尝试连接端口
-            const img = new Image();
-            const startTime = Date.now();
-            
-            img.onload = function() {
-                addResult(`${currentPort}/TCP 开放 (快速响应)`, 'text-green-400');
-                scanNextPort();
-            };
-            
-            img.onerror = function() {
-                // 超时或连接被拒绝，检查耗时
-                const elapsed = Date.now() - startTime;
-                if (elapsed > 1500) {
-                    // 可能是开放端口但无响应
-                    addResult(`${currentPort}/TCP 可能开放 (无响应)`, 'text-yellow-400');
-                } else {
-                    // 端口关闭
-                    addResult(`${currentPort}/TCP 关闭`, 'text-gray-400');
+
+        // 初始化端口扫描器
+        function initPortScanner() {
+            const startBtn = document.getElementById('start-port-scan');
+            const stopBtn = document.getElementById('stop-port-scan');
+            const hostInput = document.getElementById('port-scan-host');
+            const startPortInput = document.getElementById('port-scan-start');
+            const endPortInput = document.getElementById('port-scan-end');
+            const resultsDiv = document.getElementById('port-scan-results');
+            const statusDiv = document.getElementById('port-scan-status');
+            const clearBtn = document.getElementById('clear-port-results');
+
+            let isScanning = false;
+            let scanTimeout;
+
+            // 开始扫描
+            startBtn.addEventListener('click', () => {
+                const host = hostInput.value.trim();
+                const startPort = parseInt(startPortInput.value);
+                const endPort = parseInt(endPortInput.value);
+
+                if (!host) {
+                    alert('请输入目标主机');
+                    return;
                 }
-                scanNextPort();
-            };
-            
-            // 设置超时
-            setTimeout(() => {
-                // 超时处理
-                addResult(`${currentPort}/TCP 关闭 (超时)`, 'text-gray-400');
-                scanNextPort();
-            }, 2000);
-            
-            // 尝试连接
-            try {
-                img.src = `http://${host}:${currentPort}/favicon.ico?t=${Date.now()}`;
-            } catch (e) {
-                addResult(`${currentPort}/TCP 错误: ${e.message}`, 'text-red-400');
-                scanNextPort();
-            }
-            
-            statusDiv.textContent = `状态: 正在扫描 ${currentPort}/${endPort}`;
-            currentPort++;
-        }
-        
-        // 开始扫描
-        scanNextPort();
-    });
-    
-    // 停止扫描
-    stopBtn.addEventListener('click', () => {
-        isScanning = false;
-        clearTimeout(scanTimeout);
-        finishScan();
-    });
-    
-    // 清空结果
-    clearBtn.addEventListener('click', () => {
-        resultsDiv.textContent = '准备就绪，请输入目标主机并点击"开始扫描"';
-    });
-    
-    // 添加扫描结果
-    function addResult(text, className) {
-        const line = document.createElement('div');
-        line.className = className;
-        line.textContent = text;
-        resultsDiv.appendChild(line);
-        resultsDiv.scrollTop = resultsDiv.scrollHeight;
-    }
-    
-    // 完成扫描
-    function finishScan() {
-        isScanning = false;
-        startBtn.disabled = false;
-        stopBtn.disabled = true;
-        statusDiv.textContent = '状态: 已完成';
-        addResult('扫描完成！', 'text-accent');
-    }
-}
 
-// 初始化密码生成器
-function initPasswordGenerator() {
-    const lengthSlider = document.getElementById('password-length');
-    const lengthValue = document.getElementById('password-length-value');
-    const includeUppercase = document.getElementById('include-uppercase');
-    const includeLowercase = document.getElementById('include-lowercase');
-    const includeNumbers = document.getElementById('include-numbers');
-    const includeSymbols = document.getElementById('include-symbols');
-    const excludeSimilar = document.getElementById('exclude-similar');
-    const excludeAmbiguous = document.getElementById('exclude-ambiguous');
-    const generateBtn = document.getElementById('generate-password');
-    const passwordInput = document.getElementById('generated-password');
-    const copyBtn = document.getElementById('copy-password');
-    
-    // 更新密码长度显示
-    lengthSlider.addEventListener('input', () => {
-        lengthValue.textContent = lengthSlider.value;
-    });
-    
-    // 生成密码
-    generateBtn.addEventListener('click', () => {
-        const length = parseInt(lengthSlider.value);
-        
-        // 至少选择一种字符类型
-        if (!includeUppercase.checked && 
-            !includeLowercase.checked && 
-            !includeNumbers.checked && 
-            !includeSymbols.checked) {
-            alert('请至少选择一种字符类型');
-            return;
+                if (startPort < 1 || endPort > 65535 || startPort > endPort) {
+                    alert('请输入有效的端口范围');
+                    return;
+                }
+
+                isScanning = true;
+                startBtn.disabled = true;
+                stopBtn.disabled = false;
+                resultsDiv.textContent = `开始扫描 ${host} 从端口 ${startPort} 到 ${endPort}...`;
+                statusDiv.textContent = '状态: 扫描中...';
+
+                // 简单的端口扫描实现（受浏览器安全限制，功能有限）
+                let currentPort = startPort;
+
+                function scanNextPort() {
+                    if (!isScanning || currentPort > endPort) {
+                        finishScan();
+                        return;
+                    }
+
+                    // 创建一个Image对象尝试连接端口
+                    const img = new Image();
+                    const startTime = Date.now();
+
+                    img.onload = function () {
+                        addResult(`${currentPort}/TCP 开放 (快速响应)`, 'text-green-400');
+                        scanNextPort();
+                    };
+
+                    img.onerror = function () {
+                        // 超时或连接被拒绝，检查耗时
+                        const elapsed = Date.now() - startTime;
+                        if (elapsed > 1500) {
+                            // 可能是开放端口但无响应
+                            addResult(`${currentPort}/TCP 可能开放 (无响应)`, 'text-yellow-400');
+                        } else {
+                            // 端口关闭
+                            addResult(`${currentPort}/TCP 关闭`, 'text-gray-400');
+                        }
+                        scanNextPort();
+                    };
+
+                    // 设置超时
+                    setTimeout(() => {
+                        // 超时处理
+                        addResult(`${currentPort}/TCP 关闭 (超时)`, 'text-gray-400');
+                        scanNextPort();
+                    }, 2000);
+
+                    // 尝试连接
+                    try {
+                        img.src = `http://${host}:${currentPort}/favicon.ico?t=${Date.now()}`;
+                    } catch (e) {
+                        addResult(`${currentPort}/TCP 错误: ${e.message}`, 'text-red-400');
+                        scanNextPort();
+                    }
+
+                    statusDiv.textContent = `状态: 正在扫描 ${currentPort}/${endPort}`;
+                    currentPort++;
+                }
+
+                // 开始扫描
+                scanNextPort();
+            });
+
+            // 停止扫描
+            stopBtn.addEventListener('click', () => {
+                isScanning = false;
+                clearTimeout(scanTimeout);
+                finishScan();
+            });
+
+            // 清空结果
+            clearBtn.addEventListener('click', () => {
+                resultsDiv.textContent = '准备就绪，请输入目标主机并点击"开始扫描"';
+            });
+
+            // 添加扫描结果
+            function addResult(text, className) {
+                const line = document.createElement('div');
+                line.className = className;
+                line.textContent = text;
+                resultsDiv.appendChild(line);
+                resultsDiv.scrollTop = resultsDiv.scrollHeight;
+            }
+
+            // 完成扫描
+            function finishScan() {
+                isScanning = false;
+                startBtn.disabled = false;
+                stopBtn.disabled = true;
+                statusDiv.textContent = '状态: 已完成';
+                addResult('扫描完成！', 'text-accent');
+            }
         }
-        
-        // 构建字符集
-        let charset = '';
-        if (includeUppercase.checked) charset += 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
-        if (includeLowercase.checked) charset += 'abcdefghijklmnopqrstuvwxyz';
-        if (includeNumbers.checked) charset += '0123456789';
-        if (includeSymbols.checked) charset += '!@#$%^&*()_+~`|}{[]:;?><,./-=';
-        
-        // 排除易混淆字符
-        if (excludeSimilar.checked) {
-            charset = charset.replace(/[il1Lo0O]/g, '');
-        }
-        
-        // 排除可能引起歧义的字符
-        if (excludeAmbiguous.checked) {
-            charset = charset.replace(/[{}\[\]()\/\\'"`,;:.]/g, '');
-        }
-        
-        // 生成密码
-        let password = '';
-        for (let i = 0; i < length; i++) {
-            const randomIndex = Math.floor(Math.random() * charset.length);
-            password += charset.charAt(randomIndex);
-        }
-        
-        // 显示密码
-        passwordInput.value = password;
-        
-        // 计算密码强度
-        calculatePasswordStrength(password);
-    });
-    
-    // 复制密码
-    copyBtn.addEventListener('click', () => {
-        if (passwordInput.value) {
-            passwordInput.select();
-            document.execCommand('copy');
-            
-            // 显示复制成功提示
-            copyBtn.innerHTML = '<i class="fa fa-check"></i>';
-            setTimeout(() => {
-                copyBtn.innerHTML = '<i class="fa fa-copy"></i>';
-            }, 2000);
-        }
-    });
-    
-    // 计算密码强度
-    function calculatePasswordStrength(password) {
-        // 简单的密码强度评估
-        let strength = 0;
-        
-        // 长度因素
-        strength += Math.min(password.length, 20) * 4;
-        
-        // 包含小写字母
-        if (/[a-z]/.test(password)) strength += 10;
-        
-        // 包含大写字母
-        if (/[A-Z]/.test(password)) strength += 10;
-        
-        // 包含数字
-        if (/[0-9]/.test(password)) strength += 10;
-        
-        // 包含符号
-        if (/[^A-Za-z0-9]/.test(password)) strength += 15;
-        
-        // 字符多样性
-        const charTypes = (/\d/.test(password)?1:0) + 
-                          (/[a-z]/.test(password)?1:0) + 
-                          (/[A-Z]/.test(password)?1:0) + 
-                          (/[^A-Za-z0-9]/.test(password)?1:0);
-        strength += charTypes * 10;
-        
-        // 重复字符惩罚
-        const repeats = password.length - new Set(password).size;
-        strength -= repeats * 2;
-        
-        // 连续字符惩罚
-        const consecutive = (password.match(/(.)\1+/g) || []).reduce((sum, match) => sum + match.length - 1, 0);
-        strength -= consecutive * 3;
-        
-        // 限制最大值
-        strength = Math.min(strength, 100);
-        
-        // 显示强度
-        const strengthMeter = document.getElementById('password-strength-meter');
-        const strengthText = document.getElementById('password-strength-text');
-        
-        if (!strengthMeter) {
-            // 创建强度指示器
-            const strengthContainer = document.createElement('div');
-            strengthContainer.className = 'mt-4';
-            strengthContainer.innerHTML = `
+
+        // 初始化密码生成器
+        function initPasswordGenerator() {
+            const lengthSlider = document.getElementById('password-length');
+            const lengthValue = document.getElementById('password-length-value');
+            const includeUppercase = document.getElementById('include-uppercase');
+            const includeLowercase = document.getElementById('include-lowercase');
+            const includeNumbers = document.getElementById('include-numbers');
+            const includeSymbols = document.getElementById('include-symbols');
+            const excludeSimilar = document.getElementById('exclude-similar');
+            const excludeAmbiguous = document.getElementById('exclude-ambiguous');
+            const generateBtn = document.getElementById('generate-password');
+            const passwordInput = document.getElementById('generated-password');
+            const copyBtn = document.getElementById('copy-password');
+
+            // 更新密码长度显示
+            lengthSlider.addEventListener('input', () => {
+                lengthValue.textContent = lengthSlider.value;
+            });
+
+            // 生成密码
+            generateBtn.addEventListener('click', () => {
+                const length = parseInt(lengthSlider.value);
+
+                // 至少选择一种字符类型
+                if (!includeUppercase.checked &&
+                    !includeLowercase.checked &&
+                    !includeNumbers.checked &&
+                    !includeSymbols.checked) {
+                    alert('请至少选择一种字符类型');
+                    return;
+                }
+
+                // 构建字符集
+                let charset = '';
+                if (includeUppercase.checked) charset += 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
+                if (includeLowercase.checked) charset += 'abcdefghijklmnopqrstuvwxyz';
+                if (includeNumbers.checked) charset += '0123456789';
+                if (includeSymbols.checked) charset += '!@#$%^&*()_+~`|}{[]:;?><,./-=';
+
+                // 排除易混淆字符
+                if (excludeSimilar.checked) {
+                    charset = charset.replace(/[il1Lo0O]/g, '');
+                }
+
+                // 排除可能引起歧义的字符
+                if (excludeAmbiguous.checked) {
+                    charset = charset.replace(/[{}\[\]()\/\\'"`,;:.]/g, '');
+                }
+
+                // 生成密码
+                let password = '';
+                for (let i = 0; i < length; i++) {
+                    const randomIndex = Math.floor(Math.random() * charset.length);
+                    password += charset.charAt(randomIndex);
+                }
+
+                // 显示密码
+                passwordInput.value = password;
+
+                // 计算密码强度
+                calculatePasswordStrength(password);
+            });
+
+            // 复制密码
+            copyBtn.addEventListener('click', () => {
+                if (passwordInput.value) {
+                    passwordInput.select();
+                    document.execCommand('copy');
+
+                    // 显示复制成功提示
+                    copyBtn.innerHTML = '<i class="fa fa-check"></i>';
+                    setTimeout(() => {
+                        copyBtn.innerHTML = '<i class="fa fa-copy"></i>';
+                    }, 2000);
+                }
+            });
+
+            // 计算密码强度
+            function calculatePasswordStrength(password) {
+                // 简单的密码强度评估
+                let strength = 0;
+
+                // 长度因素
+                strength += Math.min(password.length, 20) * 4;
+
+                // 包含小写字母
+                if (/[a-z]/.test(password)) strength += 10;
+
+                // 包含大写字母
+                if (/[A-Z]/.test(password)) strength += 10;
+
+                // 包含数字
+                if (/[0-9]/.test(password)) strength += 10;
+
+                // 包含符号
+                if (/[^A-Za-z0-9]/.test(password)) strength += 15;
+
+                // 字符多样性
+                const charTypes = (/\d/.test(password) ? 1 : 0) +
+                    (/[a-z]/.test(password) ? 1 : 0) +
+                    (/[A-Z]/.test(password) ? 1 : 0) +
+                    (/[^A-Za-z0-9]/.test(password) ? 1 : 0);
+                strength += charTypes * 10;
+
+                // 重复字符惩罚
+                const repeats = password.length - new Set(password).size;
+                strength -= repeats * 2;
+
+                // 连续字符惩罚
+                const consecutive = (password.match(/(.)\1+/g) || []).reduce((sum, match) => sum + match.length - 1, 0);
+                strength -= consecutive * 3;
+
+                // 限制最大值
+                strength = Math.min(strength, 100);
+
+                // 显示强度
+                const strengthMeter = document.getElementById('password-strength-meter');
+                const strengthText = document.getElementById('password-strength-text');
+
+                if (!strengthMeter) {
+                    // 创建强度指示器
+                    const strengthContainer = document.createElement('div');
+                    strengthContainer.className = 'mt-4';
+                    strengthContainer.innerHTML = `
                 <div class="flex justify-between mb-1">
                     <span class="text-sm text-gray-400">密码强度</span>
                     <span id="password-strength-text" class="text-sm"></span>
@@ -2166,36 +2174,47 @@ function initPasswordGenerator() {
                     <div id="password-strength-meter" class="h-full transition-all duration-500"></div>
                 </div>
             `;
-            passwordInput.parentNode.after(strengthContainer);
-        }
-        
-        // 更新强度显示
-        let strengthClass = 'bg-red-500';
-        let strengthLabel = '弱';
-        
-        if (strength >= 80) {
-            strengthClass = 'bg-green-500';
-            strengthLabel = '强';
-        } else if (strength >= 50) {
-            strengthClass = 'bg-yellow-500';
-            strengthLabel = '中';
-        }
-        
-        strengthMeter.className = `h-full ${strengthClass} transition-all duration-500`;
-        strengthMeter.style.width = `${strength}%`;
-        strengthText.textContent = strengthLabel;
-    }
-}
+                    passwordInput.parentNode.after(strengthContainer);
+                }
 
-// 在DOM加载完成后初始化安全工具
-document.addEventListener('DOMContentLoaded', () => {
-    // 初始化其他功能...
-    
-    // 初始化网络安全工具
-    initSecurityTools();
-});    
+                // 更新强度显示
+                let strengthClass = 'bg-red-500';
+                let strengthLabel = '弱';
+
+                if (strength >= 80) {
+                    strengthClass = 'bg-green-500';
+                    strengthLabel = '强';
+                } else if (strength >= 50) {
+                    strengthClass = 'bg-yellow-500';
+                    strengthLabel = '中';
+                }
+
+                strengthMeter.className = `h-full ${strengthClass} transition-all duration-500`;
+                strengthMeter.style.width = `${strength}%`;
+                strengthText.textContent = strengthLabel;
+            }
+        }
+
+        // 在DOM加载完成后初始化安全工具
+        document.addEventListener('DOMContentLoaded', () => {
+            // 初始化其他功能...
+
+            // 初始化网络安全工具
+            initSecurityTools();
+        });
         // 设置在线编辑器的地方...
+
+    
+        const http_3=document.getElementsByClassName('nav-link flex items-center space-x-3 px-4 py-3 rounded-lg text-white hover:bg-primary/20 transition-all HTTP_3')[0]
+
+         http_3.addEventListener('click', () => {
+            // 创建一个新窗口，并加载在线编辑器
+            window.location.href='./HTTP_3.html'
+        });
+        
+
     </script>
+
 </body>
 
 </html>

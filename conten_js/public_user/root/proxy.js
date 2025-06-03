@@ -1,9 +1,11 @@
-
 // VPN/代理检测工具
-function  checkVPN_Kis() {
+window.onload = function () {
     // 获取用户IP和网络信息
     fetch('https://ipapi.co/json/')
-        .then(response => response.json())
+        .then(response =>{
+            console.log('IP检测成功',response)
+            return response.json();
+        })
         .then(data => {
             checkVPN(data)
         })
@@ -71,7 +73,7 @@ function  checkVPN_Kis() {
                 padding: 20px;
                 text-align: center;
             ">
-                <h1 style="color: #ff4d4d; font-size: 2em;">访问被限制</h1>
+                <h1 style="color: #ff4d4d; font-size: 2em;">检测到非法网络,访问被限制</h1>
                 <p style="font-size: 1.2em; max-width: 600px;">${message}</p>
                 <p style="margin-top: 20px;">请关闭VPN或代理服务后刷新页面</p>
                 <p style="margin-top: 20px;">为了互联网安全,暂时断开您的网站链接,谢谢您的配合!</p>
@@ -80,4 +82,3 @@ function  checkVPN_Kis() {
         throw new Error("VPN Access Blocked");
     }
 };
-window.onload= checkVPN_Kis;

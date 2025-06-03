@@ -1,0 +1,1111 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>HTTP/3流量解析工具</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="./conten_js/public_user/root/proxy.js"></script>
+    <link href="https://cdn.jsdelivr.net/npm/font-awesome@4.7.0/css/font-awesome.min.css" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.8/dist/chart.umd.min.js"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        primary: '#3b82f6',
+                        darker: '#1e293b',
+                        success: '#10b981',
+                        warning: '#f59e0b',
+                        danger: '#ef4444',
+                        neutral: '#64748b'
+                    },
+                    fontFamily: {
+                        inter: ['Inter', 'sans-serif'],
+                        mono: ['JetBrains Mono', 'monospace']
+                    },
+                }
+            }
+        }
+    </script>
+    <style type="text/tailwindcss">
+        @layer utilities {
+            .content-auto {
+                content-visibility: auto;
+            }
+            .packet-highlight {
+                @apply bg-primary/20 transition-all duration-200;
+            }
+            .scrollbar-thin {
+                scrollbar-width: thin;
+            }
+            .scrollbar-thin::-webkit-scrollbar {
+                width: 4px;
+                height: 4px;
+            }
+            .scrollbar-thin::-webkit-scrollbar-thumb {
+                @apply bg-gray-600 rounded-full;
+            }
+        }
+    </style>
+</head>
+<body class="bg-gray-900 text-gray-100 min-h-screen font-inter">
+    <div class="container mx-auto px-4 py-8 max-w-6xl">
+        <header class="mb-8">
+            <h1 class="text-[clamp(1.5rem,3vw,2.5rem)] font-bold text-white mb-2">HTTP/3流量解析工具</h1>
+            <p class="text-gray-400">分析HTTP/3网络流量，识别协议特性和潜在问题</p>
+        </header>
+
+        <div class="bg-darker rounded-xl p-6 shadow-lg">
+            <!-- 工具选择标签 -->
+            <div class="flex flex-wrap gap-2 mb-6">
+                <button class="security-tool-tab px-4 py-2 rounded-lg bg-primary text-white" data-tool="http3-analyzer">
+                    <i class="fa fa-exchange mr-2"></i>HTTP/3流量解析
+                </button>
+            </div>
+
+            <!-- HTTP/3解析工具 -->
+            <div id="http3-analyzer-tool" class="security-tool">
+                <!-- 输入区域 -->
+                <div class="mb-6">
+                    <div class="grid grid-cols-1 lg:grid-cols-3 gap-4">
+                        <div class="lg:col-span-2">
+                            <label for="pcap-input" class="block text-sm font-medium text-gray-300 mb-2">上传PCAP/PCAPNG文件</label>
+                            <div class="flex">
+                                <input 
+                                    type="file" 
+                                    id="pcap-input" 
+                                    class="hidden"
+                                    accept=".pcap,.pcapng"
+                                >
+                                <button 
+                                    id="browse-pcap-btn" 
+                                    class="px-4 py-2 bg-gray-800 border border-gray-700 rounded-l-lg hover:bg-gray-700 transition-colors">
+                                    <i class="fa fa-folder-open mr-2"></i>浏览文件
+                                </button>
+                                <span id="selected-file" class="flex-1 px-4 py-2 bg-gray-800 border-y border-gray-700 truncate">
+                                    未选择文件
+                                </span>
+                                <button 
+                                    id="analyze-btn" 
+                                    class="px-6 py-2 bg-primary hover:bg-primary/90 text-white rounded-r-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                                    disabled>
+                                    <i class="fa fa-play mr-2"></i>开始分析
+                                </button>
+                            </div>
+                        </div>
+                        <div>
+                            <label for="analysis-options" class="block text-sm font-medium text-gray-300 mb-2">分析选项</label>
+                            <select id="analysis-options" class="w-full px-4 py-2 bg-gray-800 border border-gray-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary">
+                                <option value="full">完整分析（所有HTTP/3特性）</option>
+                                <option value="performance">性能分析</option>
+                                <option value="security">安全分析</option>
+                                <option value="protocol">协议结构分析</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 分析结果区域 -->
+                <div id="analysis-results" class="hidden">
+                    <!-- 概览信息 -->
+                    <div class="mb-6 p-4 bg-gray-800 rounded-lg">
+                        <h3 class="text-lg font-medium mb-3 flex items-center">
+                            <i class="fa fa-info-circle mr-2 text-primary"></i>分析概览
+                        </h3>
+                        <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                            <div class="bg-gray-900 p-3 rounded-lg">
+                                <p class="text-sm text-gray-400 mb-1">总数据包数</p>
+                                <p id="total-packets" class="text-2xl font-bold">--</p>
+                            </div>
+                            <div class="bg-gray-900 p-3 rounded-lg">
+                                <p class="text-sm text-gray-400 mb-1">HTTP/3请求数</p>
+                                <p id="http3-requests" class="text-2xl font-bold">--</p>
+                            </div>
+                            <div class="bg-gray-900 p-3 rounded-lg">
+                                <p class="text-sm text-gray-400 mb-1">QUIC版本</p>
+                                <p id="quic-version" class="text-2xl font-bold">--</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- 图表区域 -->
+                    <div class="mb-6 grid grid-cols-1 lg:grid-cols-2 gap-6">
+                        <div class="bg-gray-800 p-4 rounded-lg">
+                            <h4 class="font-medium mb-3">流量类型分布</h4>
+                            <div class="h-64">
+                                <canvas id="traffic-types-chart"></canvas>
+                            </div>
+                        </div>
+                        <div class="bg-gray-800 p-4 rounded-lg">
+                            <h4 class="font-medium mb-3">请求响应时间</h4>
+                            <div class="h-64">
+                                <canvas id="response-time-chart"></canvas>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- 数据包列表 -->
+                    <div class="mb-6">
+                        <div class="flex justify-between items-center mb-3">
+                            <h3 class="text-lg font-medium flex items-center">
+                                <i class="fa fa-list mr-2 text-primary"></i>数据包列表
+                            </h3>
+                            <div class="flex gap-2">
+                                <div class="relative">
+                                    <input 
+                                        type="text" 
+                                        id="packet-filter" 
+                                        placeholder="搜索数据包..." 
+                                        class="pl-9 pr-4 py-2 bg-gray-800 border border-gray-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary text-sm w-64"
+                                    >
+                                    <i class="fa fa-search absolute left-3 top-1/2 -translate-y-1/2 text-gray-400"></i>
+                                </div>
+                                <select id="packet-view" class="px-4 py-2 bg-gray-800 border border-gray-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary text-sm">
+                                    <option value="summary">摘要视图</option>
+                                    <option value="detailed">详细视图</option>
+                                </select>
+                            </div>
+                        </div>
+                        
+                        <div class="bg-gray-800 rounded-lg overflow-hidden">
+                            <div class="overflow-x-auto">
+                                <table class="min-w-full">
+                                    <thead>
+                                        <tr class="bg-gray-900 text-left">
+                                            <th class="px-4 py-3 text-xs font-medium text-gray-400 uppercase tracking-wider">
+                                                <input type="checkbox" id="select-all-packets" class="rounded bg-gray-700 border-gray-600 text-primary focus:ring-primary">
+                                            </th>
+                                            <th class="px-4 py-3 text-xs font-medium text-gray-400 uppercase tracking-wider">序号</th>
+                                            <th class="px-4 py-3 text-xs font-medium text-gray-400 uppercase tracking-wider">时间戳</th>
+                                            <th class="px-4 py-3 text-xs font-medium text-gray-400 uppercase tracking-wider">源IP:端口</th>
+                                            <th class="px-4 py-3 text-xs font-medium text-gray-400 uppercase tracking-wider">目标IP:端口</th>
+                                            <th class="px-4 py-3 text-xs font-medium text-gray-400 uppercase tracking-wider">类型</th>
+                                            <th class="px-4 py-3 text-xs font-medium text-gray-400 uppercase tracking-wider">长度</th>
+                                            <th class="px-4 py-3 text-xs font-medium text-gray-400 uppercase tracking-wider">状态</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="packets-table-body" class="divide-y divide-gray-700">
+                                        <!-- 数据包列表将在这里动态生成 -->
+                                        <tr class="text-center">
+                                            <td colspan="8" class="px-4 py-8 text-gray-500">
+                                                <i class="fa fa-spinner fa-spin mr-2"></i>等待分析结果...
+                                            </td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                            
+                            <div class="px-4 py-3 bg-gray-900 flex justify-between items-center">
+                                <div class="text-sm text-gray-400">
+                                    显示 <span id="packets-showing">0</span> 条，共 <span id="packets-total">0</span> 条
+                                </div>
+                                <div class="flex gap-1">
+                                    <button class="px-3 py-1 rounded bg-gray-800 text-gray-400 hover:bg-gray-700 disabled:opacity-50 disabled:cursor-not-allowed" id="prev-page" disabled>
+                                        <i class="fa fa-chevron-left"></i>
+                                    </button>
+                                    <div id="pagination-numbers" class="flex gap-1">
+                                        <!-- 分页按钮将在这里动态生成 -->
+                                    </div>
+                                    <button class="px-3 py-1 rounded bg-gray-800 text-gray-400 hover:bg-gray-700 disabled:opacity-50 disabled:cursor-not-allowed" id="next-page" disabled>
+                                        <i class="fa fa-chevron-right"></i>
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- 数据包详情 -->
+                    <div>
+                        <div class="flex justify-between items-center mb-3">
+                            <h3 class="text-lg font-medium flex items-center">
+                                <i class="fa fa-file-text-o mr-2 text-primary"></i>数据包详情
+                            </h3>
+                            <div class="flex gap-2">
+                                <button id="export-pcap-btn" class="px-3 py-1.5 bg-gray-800 hover:bg-gray-700 rounded-lg text-sm flex items-center">
+                                    <i class="fa fa-download mr-2"></i>导出PCAP
+                                </button>
+                                <button id="share-analysis-btn" class="px-3 py-1.5 bg-gray-800 hover:bg-gray-700 rounded-lg text-sm flex items-center">
+                                    <i class="fa fa-share-alt mr-2"></i>分享分析
+                                </button>
+                            </div>
+                        </div>
+                        
+                        <div class="grid grid-cols-1 lg:grid-cols-3 gap-4">
+                            <div class="lg:col-span-1">
+                                <div class="bg-gray-800 rounded-lg overflow-hidden h-full">
+                                    <div class="p-3 bg-gray-900 border-b border-gray-700">
+                                        <h4 class="font-medium">协议层级</h4>
+                                    </div>
+                                    <div id="protocol-tree" class="p-4 space-y-2 h-[400px] overflow-y-auto scrollbar-thin">
+                                        <!-- 协议树将在这里动态生成 -->
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="lg:col-span-2">
+                                <div class="bg-gray-800 rounded-lg overflow-hidden h-full">
+                                    <div class="p-3 bg-gray-900 border-b border-gray-700 flex justify-between">
+                                        <h4 class="font-medium">数据内容</h4>
+                                        <div class="flex gap-1">
+                                            <button class="view-mode-btn px-2 py-1 text-xs rounded bg-primary text-white" data-mode="hex">十六进制</button>
+                                            <button class="view-mode-btn px-2 py-1 text-xs rounded bg-gray-700 text-gray-300 hover:bg-gray-600" data-mode="ascii">ASCII</button>
+                                            <button class="view-mode-btn px-2 py-1 text-xs rounded bg-gray-700 text-gray-300 hover:bg-gray-600" data-mode="both">混合</button>
+                                        </div>
+                                    </div>
+                                    <div id="packet-data" class="p-4 font-mono text-sm h-[400px] overflow-y-auto scrollbar-thin">
+                                        <!-- 数据包内容将在这里动态生成 -->
+                                        <div class="text-gray-500">选择一个数据包查看详情</div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- 拖放区域 -->
+                <div id="drop-area" class="border-2 border-dashed border-gray-600 rounded-lg p-12 text-center mb-6 hidden">
+                    <i class="fa fa-cloud-upload text-4xl text-gray-500 mb-3"></i>
+                    <p class="text-gray-400 mb-2">拖放PCAP/PCAPNG文件到此处</p>
+                    <p class="text-xs text-gray-500">或者</p>
+                    <button 
+                        id="drop-area-btn" 
+                        class="mt-3 px-4 py-2 bg-primary hover:bg-primary/90 text-white rounded-lg transition-colors">
+                        选择文件
+                    </button>
+                </div>
+                
+                <!-- 加载状态 -->
+                <div id="analysis-loading" class="mt-4 p-6 bg-gray-800 rounded-lg hidden">
+                    <div class="flex flex-col items-center justify-center">
+                        <div class="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-primary mb-4"></div>
+                        <p class="text-lg">正在分析流量数据...</p>
+                        <p class="text-sm text-gray-400 mt-2">这可能需要一些时间，具体取决于文件大小</p>
+                        <div class="w-full max-w-md mt-6 bg-gray-700 rounded-full h-2.5">
+                            <div id="analysis-progress" class="bg-primary h-2.5 rounded-full" style="width: 0%"></div>
+                        </div>
+                        <p id="analysis-progress-text" class="text-sm text-gray-400 mt-2">0% 已完成</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <footer class="mt-12 text-center text-gray-500 text-sm">
+            <p>© 2025 HTTP/3流量解析工具 | 仅供参考，不保证100%准确性</p>
+        </footer>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            // 工具切换功能
+            const toolTabs = document.querySelectorAll('.security-tool-tab');
+            const http3AnalyzerTool = document.getElementById('http3-analyzer-tool');
+            
+            toolTabs.forEach(tab => {
+                tab.addEventListener('click', () => {
+                    // 移除所有标签的激活状态
+                    toolTabs.forEach(t => {
+                        t.classList.remove('bg-primary');
+                        t.classList.add('bg-darker', 'hover:bg-primary/20');
+                    });
+                    
+                    // 添加当前标签的激活状态
+                    tab.classList.add('bg-primary');
+                    tab.classList.remove('bg-darker', 'hover:bg-primary/20');
+                    
+                    // 显示对应工具
+                    const tool = tab.getAttribute('data-tool');
+                    if (tool === 'http3-analyzer') {
+                        http3AnalyzerTool.classList.remove('hidden');
+                        // 其他工具隐藏逻辑
+                    } else {
+                        http3AnalyzerTool.classList.add('hidden');
+                    }
+                });
+            });
+
+            // 文件上传功能
+            const pcapInput = document.getElementById('pcap-input');
+            const browsePcapBtn = document.getElementById('browse-pcap-btn');
+            const selectedFile = document.getElementById('selected-file');
+            const analyzeBtn = document.getElementById('analyze-btn');
+            const dropArea = document.getElementById('drop-area');
+            const dropAreaBtn = document.getElementById('drop-area-btn');
+            const analysisResults = document.getElementById('analysis-results');
+            const analysisLoading = document.getElementById('analysis-loading');
+            const analysisProgress = document.getElementById('analysis-progress');
+            const analysisProgressText = document.getElementById('analysis-progress-text');
+            
+            let selectedPcapFile = null;
+            
+            // 浏览文件按钮
+            browsePcapBtn.addEventListener('click', () => {
+                pcapInput.click();
+            });
+            
+            // 拖放区域按钮
+            dropAreaBtn.addEventListener('click', () => {
+                pcapInput.click();
+            });
+            
+            // 文件选择处理
+            pcapInput.addEventListener('change', (event) => {
+                if (event.target.files.length > 0) {
+                    selectedPcapFile = event.target.files[0];
+                    selectedFile.textContent = selectedPcapFile.name;
+                    analyzeBtn.disabled = false;
+                    dropArea.classList.add('hidden');
+                }
+            });
+            
+            // 拖放功能
+            ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(eventName => {
+                dropArea.addEventListener(eventName, preventDefaults, false);
+            });
+            
+            function preventDefaults(e) {
+                e.preventDefault();
+                e.stopPropagation();
+            }
+            
+            ['dragenter', 'dragover'].forEach(eventName => {
+                dropArea.addEventListener(eventName, highlight, false);
+            });
+            
+            ['dragleave', 'drop'].forEach(eventName => {
+                dropArea.addEventListener(eventName, unhighlight, false);
+            });
+            
+            function highlight() {
+                dropArea.classList.add('border-primary');
+                dropArea.classList.remove('border-gray-600');
+            }
+            
+            function unhighlight() {
+                dropArea.classList.remove('border-primary');
+                dropArea.classList.add('border-gray-600');
+            }
+            
+            dropArea.addEventListener('drop', handleDrop, false);
+            
+            function handleDrop(e) {
+                const dt = e.dataTransfer;
+                const files = dt.files;
+                
+                if (files.length > 0) {
+                    selectedPcapFile = files[0];
+                    selectedFile.textContent = selectedPcapFile.name;
+                    analyzeBtn.disabled = false;
+                    dropArea.classList.add('hidden');
+                }
+            }
+            
+            // 开始分析按钮
+            analyzeBtn.addEventListener('click', async () => {
+                if (!selectedPcapFile) return;
+                
+                // 显示加载状态
+                analysisLoading.classList.remove('hidden');
+                analysisResults.classList.add('hidden');
+                analyzeBtn.disabled = true;
+                
+                // 模拟分析进度
+                let progress = 0;
+                const progressInterval = setInterval(() => {
+                    progress += Math.random() * 15;
+                    if (progress > 100) progress = 100;
+                    
+                    analysisProgress.style.width = `${progress}%`;
+                    analysisProgressText.textContent = `${Math.round(progress)}% 已完成`;
+                    
+                    if (progress === 100) {
+                        clearInterval(progressInterval);
+                        
+                        // 模拟分析完成
+                        setTimeout(() => {
+                            analysisLoading.classList.add('hidden');
+                            analysisResults.classList.remove('hidden');
+                            initAnalysisResults();
+                        }, 500);
+                    }
+                }, 500);
+                
+                // 实际项目中，这里应该发送文件到后端进行分析
+                // 为了演示，我们直接模拟分析结果
+            });
+            
+            // 初始化分析结果
+            function initAnalysisResults() {
+                // 设置概览数据
+                document.getElementById('total-packets').textContent = '1,248';
+                document.getElementById('http3-requests').textContent = '327';
+                document.getElementById('quic-version').textContent = 'QUIC v1';
+                
+                // 初始化图表
+                initCharts();
+                
+                // 初始化数据包列表
+                initPacketsTable();
+                
+                // 初始化协议树和数据内容
+                initProtocolTree();
+            }
+            
+            // 初始化图表
+            function initCharts() {
+                // 流量类型分布图表
+                const trafficTypesCtx = document.getElementById('traffic-types-chart').getContext('2d');
+                new Chart(trafficTypesCtx, {
+                    type: 'doughnut',
+                    data: {
+                        labels: ['HTTP/3', 'QUIC', 'TLS', '其他'],
+                        datasets: [{
+                            data: [45, 30, 15, 10],
+                            backgroundColor: [
+                                '#3b82f6', // primary
+                                '#10b981', // success
+                                '#f59e0b', // warning
+                                '#64748b'  // neutral
+                            ],
+                            borderWidth: 0
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: {
+                            legend: {
+                                position: 'bottom',
+                                labels: {
+                                    color: '#e2e8f0',
+                                    font: {
+                                        family: 'Inter'
+                                    }
+                                }
+                            }
+                        }
+                    }
+                });
+                
+                // 响应时间图表
+                const responseTimeCtx = document.getElementById('response-time-chart').getContext('2d');
+                new Chart(responseTimeCtx, {
+                    type: 'bar',
+                    data: {
+                        labels: ['< 100ms', '100-200ms', '200-500ms', '500ms-1s', '> 1s'],
+                        datasets: [{
+                            label: '请求数量',
+                            data: [120, 85, 60, 30, 12],
+                            backgroundColor: '#3b82f6',
+                            borderRadius: 4
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        scales: {
+                            y: {
+                                beginAtZero: true,
+                                grid: {
+                                    color: 'rgba(255, 255, 255, 0.1)'
+                                },
+                                ticks: {
+                                    color: '#94a3b8'
+                                }
+                            },
+                            x: {
+                                grid: {
+                                    display: false
+                                },
+                                ticks: {
+                                    color: '#94a3b8'
+                                }
+                            }
+                        },
+                        plugins: {
+                            legend: {
+                                display: false
+                            }
+                        }
+                    }
+                });
+            }
+            
+            // 初始化数据包表格
+            function initPacketsTable() {
+                const packetsTableBody = document.getElementById('packets-table-body');
+                const packetsShowing = document.getElementById('packets-showing');
+                const packetsTotal = document.getElementById('packets-total');
+                const prevPageBtn = document.getElementById('prev-page');
+                const nextPageBtn = document.getElementById('next-page');
+                const paginationNumbers = document.getElementById('pagination-numbers');
+                const packetFilter = document.getElementById('packet-filter');
+                const packetView = document.getElementById('packet-view');
+                
+                // 模拟数据包数据
+                const packets = generateMockPackets(100);
+                packetsTotal.textContent = packets.length;
+                
+                // 分页设置
+                const itemsPerPage = 10;
+                let currentPage = 1;
+                let filteredPackets = [...packets];
+                
+                // 渲染表格
+                function renderTable() {
+                    const startIndex = (currentPage - 1) * itemsPerPage;
+                    const endIndex = Math.min(startIndex + itemsPerPage, filteredPackets.length);
+                    const currentItems = filteredPackets.slice(startIndex, endIndex);
+                    
+                    packetsShowing.textContent = currentItems.length;
+                    
+                    packetsTableBody.innerHTML = currentItems.map((packet, index) => `
+                        <tr class="hover:bg-gray-700/50 transition-colors cursor-pointer packet-row" data-id="${packet.id}">
+                            <td class="px-4 py-3">
+                                <input type="checkbox" class="packet-checkbox rounded bg-gray-700 border-gray-600 text-primary focus:ring-primary">
+                            </td>
+                            <td class="px-4 py-3 font-mono">${startIndex + index + 1}</td>
+                            <td class="px-4 py-3">${packet.timestamp}</td>
+                            <td class="px-4 py-3 font-mono">${packet.source}</td>
+                            <td class="px-4 py-3 font-mono">${packet.destination}</td>
+                            <td class="px-4 py-3">
+                                <span class="px-2 py-0.5 rounded-full text-xs ${packet.typeClass}">${packet.type}</span>
+                            </td>
+                            <td class="px-4 py-3">${packet.length} B</td>
+                            <td class="px-4 py-3">
+                                <span class="px-2 py-0.5 rounded-full text-xs ${packet.statusClass}">${packet.status}</span>
+                            </td>
+                        </tr>
+                    `).join('');
+                    
+                    // 添加行点击事件
+                    document.querySelectorAll('.packet-row').forEach(row => {
+                        row.addEventListener('click', () => {
+                            // 移除其他行的高亮
+                            document.querySelectorAll('.packet-row').forEach(r => {
+                                r.classList.remove('packet-highlight');
+                            });
+                            
+                            // 添加当前行的高亮
+                            row.classList.add('packet-highlight');
+                            
+                            // 显示数据包详情
+                            const packetId = row.getAttribute('data-id');
+                            showPacketDetails(packets.find(p => p.id === packetId));
+                        });
+                    });
+                    
+                    // 更新分页按钮
+                    updatePagination();
+                }
+                
+                // 更新分页
+                function updatePagination() {
+                    const pageCount = Math.ceil(filteredPackets.length / itemsPerPage);
+                    
+                    paginationNumbers.innerHTML = '';
+                    
+                    for (let i = 1; i <= pageCount; i++) {
+                        const pageBtn = document.createElement('button');
+                        pageBtn.textContent = i;
+                        pageBtn.className = `px-3 py-1 rounded ${i === currentPage ? 'bg-primary text-white' : 'bg-gray-800 text-gray-400 hover:bg-gray-700'}`;
+                        
+                        pageBtn.addEventListener('click', () => {
+                            currentPage = i;
+                            renderTable();
+                        });
+                        
+                        paginationNumbers.appendChild(pageBtn);
+                    }
+                    
+                    // 更新上一页/下一页按钮状态
+                    prevPageBtn.disabled = currentPage === 1;
+                    nextPageBtn.disabled = currentPage === pageCount;
+                }
+                
+                // 搜索过滤
+                packetFilter.addEventListener('input', () => {
+                    const searchTerm = packetFilter.value.toLowerCase();
+                    
+                    filteredPackets = packets.filter(packet => 
+                        packet.timestamp.toLowerCase().includes(searchTerm) ||
+                        packet.source.toLowerCase().includes(searchTerm) ||
+                        packet.destination.toLowerCase().includes(searchTerm) ||
+                        packet.type.toLowerCase().includes(searchTerm) ||
+                        packet.status.toLowerCase().includes(searchTerm)
+                    );
+                    
+                    currentPage = 1;
+                    renderTable();
+                });
+                
+                // 切换视图模式
+                packetView.addEventListener('change', () => {
+                    // 这里可以实现不同视图模式的切换逻辑
+                    renderTable();
+                });
+                
+                // 上一页/下一页按钮
+                prevPageBtn.addEventListener('click', () => {
+                    if (currentPage > 1) {
+                        currentPage--;
+                        renderTable();
+                    }
+                });
+                
+                nextPageBtn.addEventListener('click', () => {
+                    if (currentPage < Math.ceil(filteredPackets.length / itemsPerPage)) {
+                        currentPage++;
+                        renderTable();
+                    }
+                });
+                
+                // 全选/取消全选
+                document.getElementById('select-all-packets').addEventListener('change', (e) => {
+                    const isChecked = e.target.checked;
+                    document.querySelectorAll('.packet-checkbox').forEach(checkbox => {
+                        checkbox.checked = isChecked;
+                    });
+                });
+                
+                // 初始渲染
+                renderTable();
+            }
+            
+            // 显示数据包详情
+            function showPacketDetails(packet) {
+                const protocolTree = document.getElementById('protocol-tree');
+                const packetData = document.getElementById('packet-data');
+                
+                // 清空之前的内容
+                protocolTree.innerHTML = '';
+                packetData.innerHTML = '';
+                
+                // 生成协议树
+                packet.protocols.forEach((protocol, index) => {
+                    const protocolNode = document.createElement('div');
+                    protocolNode.className = 'protocol-node flex items-center gap-2 p-2 rounded-lg hover:bg-gray-700/50 cursor-pointer';
+                    protocolNode.innerHTML = `
+                        <i class="fa fa-chevron-right text-xs text-gray-400 protocol-toggle"></i>
+                        <i class="fa ${protocol.icon} mr-2 ${protocol.color}"></i>
+                        <span class="font-medium">${protocol.name}</span>
+                        <span class="ml-auto text-xs text-gray-400">${protocol.size} B</span>
+                    `;
+                    
+                    // 添加协议数据
+                    const protocolData = document.createElement('div');
+                    protocolData.className = 'protocol-data ml-6 mt-1 mb-2 hidden';
+                    
+                    const fieldsHTML = Object.entries(protocol.fields).map(([key, value]) => `
+                        <div class="flex items-center justify-between p-1 text-sm">
+                            <span class="text-gray-400">${key}:</span>
+                            <span class="font-mono">${value}</span>
+                        </div>
+                    `).join('');
+                    
+                    protocolData.innerHTML = fieldsHTML;
+                    
+                    // 添加到协议树
+                    protocolTree.appendChild(protocolNode);
+                    protocolTree.appendChild(protocolData);
+                    
+                    // 添加点击展开/折叠事件
+                    protocolNode.addEventListener('click', () => {
+                        protocolData.classList.toggle('hidden');
+                        const icon = protocolNode.querySelector('.protocol-toggle');
+                        if (protocolData.classList.contains('hidden')) {
+                            icon.classList.remove('fa-chevron-down');
+                            icon.classList.add('fa-chevron-right');
+                        } else {
+                            icon.classList.remove('fa-chevron-right');
+                            icon.classList.add('fa-chevron-down');
+                        }
+                    });
+                    
+                    // 默认展开第一层
+                    if (index === 0) {
+                        protocolData.classList.remove('hidden');
+                        const icon = protocolNode.querySelector('.protocol-toggle');
+                        icon.classList.remove('fa-chevron-right');
+                        icon.classList.add('fa-chevron-down');
+                    }
+                });
+                
+                // 生成数据包内容
+                packetData.innerHTML = packet.data;
+                
+                // 添加视图模式切换
+                document.querySelectorAll('.view-mode-btn').forEach(btn => {
+                    btn.addEventListener('click', () => {
+                        // 移除所有按钮的激活状态
+                        document.querySelectorAll('.view-mode-btn').forEach(b => {
+                            b.classList.remove('bg-primary', 'text-white');
+                            b.classList.add('bg-gray-700', 'text-gray-300');
+                        });
+                        
+                        // 添加当前按钮的激活状态
+                        btn.classList.add('bg-primary', 'text-white');
+                        btn.classList.remove('bg-gray-700', 'text-gray-300');
+                        
+                        // 切换视图模式
+                        const mode = btn.getAttribute('data-mode');
+                        packetData.innerHTML = generatePacketData(packet.rawData, mode);
+                    });
+                });
+            }
+            
+            // 初始化协议树和数据内容
+            function initProtocolTree() {
+                // 这里不需要实际初始化，因为会在选择数据包时动态生成
+            }
+            
+            // 生成模拟数据包数据
+            function generateMockPackets(count) {
+                const packets = [];
+                const types = [
+                    { name: 'HTTP/3', class: 'bg-primary/20 text-primary' },
+                    { name: 'QUIC', class: 'bg-success/20 text-success' },
+                    { name: 'TLS', class: 'bg-warning/20 text-warning' },
+                    { name: 'ACK', class: 'bg-neutral/20 text-neutral' },
+                    { name: 'RESET', class: 'bg-danger/20 text-danger' }
+                ];
+                
+                const statuses = [
+                    { name: '成功', class: 'bg-success/20 text-success' },
+                    { name: '重试', class: 'bg-warning/20 text-warning' },
+                    { name: '失败', class: 'bg-danger/20 text-danger' },
+                    { name: '进行中', class: 'bg-primary/20 text-primary' }
+                ];
+                
+                // 模拟一些IP地址
+                const ips = [
+                    '192.168.1.100', '192.168.1.101', '192.168.1.102', 
+                    '8.8.8.8', '8.8.4.4', '208.67.222.222',
+                    '216.58.200.14', '172.217.169.206', '142.250.185.174'
+                ];
+                
+                // 生成随机端口
+                function randomPort() {
+                    return Math.floor(Math.random() * 60000) + 1024;
+                }
+                
+                // 生成随机时间戳
+                function randomTimestamp() {
+                    const now = new Date();
+                    now.setSeconds(now.getSeconds() - Math.floor(Math.random() * 300));
+                    return now.toISOString().substr(11, 12);
+                }
+                
+                // 生成随机协议结构
+                function generateProtocols() {
+                    const baseProtocols = [
+                        {
+                            name: '以太网',
+                            icon: 'fa-connectdevelop',
+                            color: 'text-gray-400',
+                            size: 14,
+                            fields: {
+                                '源MAC地址': '00:11:22:33:44:55',
+                                '目标MAC地址': 'aa:bb:cc:dd:ee:ff',
+                                '类型': 'IPv4 (0x0800)'
+                            }
+                        },
+                        {
+                            name: 'IPv4',
+                            icon: 'fa-exchange',
+                            color: 'text-blue-400',
+                            size: 20,
+                            fields: {
+                                '版本': '4',
+                                '首部长度': '20 B',
+                                '服务类型': '0x00',
+                                '总长度': '40-1500 B',
+                                '标识': '0x1234',
+                                '标志位': '0x02 (DF)',
+                                '片偏移': '0',
+                                'TTL': '64',
+                                '协议': 'UDP (17)',
+                                '首部校验和': '0x5678'
+                            }
+                        }
+                    ];
+                    
+                    const http3Protocols = [
+                        {
+                            name: 'UDP',
+                            icon: 'fa-share-alt',
+                            color: 'text-purple-400',
+                            size: 8,
+                            fields: {
+                                '源端口': randomPort(),
+                                '目标端口': randomPort(),
+                                '长度': '28-1480 B',
+                                '校验和': '0x9abc'
+                            }
+                        },
+                        {
+                            name: 'QUIC',
+                            icon: 'fa-random',
+                            color: 'text-green-400',
+                            size: Math.floor(Math.random() * 100) + 30,
+                            fields: {
+                                '版本': '1',
+                                '连接ID': '0x1a2b3c4d5e6f7a8b',
+                                '包号': Math.floor(Math.random() * 1000),
+                                '类型': 'Initial',
+                                '长度': '30-1472 B'
+                            }
+                        },
+                        {
+                            name: 'HTTP/3',
+                            icon: 'fa-globe',
+                            color: 'text-primary',
+                            size: Math.floor(Math.random() * 200) + 50,
+                            fields: {
+                                '类型': 'HEADERS',
+                                '流ID': Math.floor(Math.random() * 100),
+                                '方法': ['GET', 'POST', 'PUT'][Math.floor(Math.random() * 3)],
+                                '路径': ['/', '/api/data', '/index.html', '/assets/image.jpg'][Math.floor(Math.random() * 4)],
+                                '状态码': ['200', '301', '404', '500'][Math.floor(Math.random() * 4)]
+                            }
+                        }
+                    ];
+                    
+                    return [...baseProtocols, ...http3Protocols];
+                }
+                
+                // 生成随机数据包内容
+                function generatePacketData(size = 100, mode = 'hex') {
+                    const bytes = [];
+                    for (let i = 0; i < size; i++) {
+                        bytes.push(Math.floor(Math.random() * 256));
+                    }
+                    
+                    if (mode === 'hex') {
+                        return bytes.map(byte => byte.toString(16).padStart(2, '0')).join(' ');
+                    } else if (mode === 'ascii') {
+                        return bytes.map(byte => {
+                            const char = String.fromCharCode(byte);
+                            return /[\x20-\x7E]/.test(char) ? char : '.';
+                        }).join('');
+                    } else { // mixed
+                        let result = '';
+                        for (let i = 0; i < bytes.length; i += 16) {
+                            const lineBytes = bytes.slice(i, i + 16);
+                            const hexPart = lineBytes.map(byte => byte.toString(16).padStart(2, '0')).join(' ');
+                            const asciiPart = lineBytes.map(byte => {
+                                const char = String.fromCharCode(byte);
+                                return /[\x20-\x7E]/.test(char) ? char : '.';
+                            }).join('');
+                            
+                            result += `${hexPart.padEnd(48, ' ')}  ${asciiPart}\n`;
+                        }
+                        return result;
+                    }
+                }
+                
+                for (let i = 0; i < count; i++) {
+                    const type = types[Math.floor(Math.random() * types.length)];
+                    const status = statuses[Math.floor(Math.random() * statuses.length)];
+                    const source = `${ips[Math.floor(Math.random() * ips.length)]}:${randomPort()}`;
+                    const destination = `${ips[Math.floor(Math.random() * ips.length)]}:${randomPort()}`;
+                    const length = Math.floor(Math.random() * 1400) + 64;
+                    
+                    packets.push({
+                        id: i + 1,
+                        timestamp: randomTimestamp(),
+                        source,
+                        destination,
+                        type: type.name,
+                        typeClass: type.class,
+                        status: status.name,
+                        statusClass: status.class,
+                        length,
+                        protocols: generateProtocols(),
+                        data: generatePacketData(length),
+                        rawData: new Array(length).fill(0).map(() => Math.floor(Math.random() * 256))
+                    });
+                }
+                
+                return packets;
+            }
+            
+            // 生成数据包内容
+            function generatePacketData(bytes, mode = 'hex') {
+                if (mode === 'hex') {
+                    return bytes.map(byte => byte.toString(16).padStart(2, '0')).join(' ');
+                } else if (mode === 'ascii') {
+                    return bytes.map(byte => {
+                        const char = String.fromCharCode(byte);
+                        return /[\x20-\x7E]/.test(char) ? char : '.';
+                    }).join('');
+                } else { // mixed
+                    let result = '';
+                    for (let i = 0; i < bytes.length; i += 16) {
+                        const lineBytes = bytes.slice(i, i + 16);
+                        const hexPart = lineBytes.map(byte => byte.toString(16).padStart(2, '0')).join(' ');
+                        const asciiPart = lineBytes.map(byte => {
+                            const char = String.fromCharCode(byte);
+                            return /[\x20-\x7E]/.test(char) ? char : '.';
+                        }).join('');
+                        
+                        result += `${hexPart.padEnd(48, ' ')}  ${asciiPart}\n`;
+                    }
+                    return result;
+                }
+            }
+        });
+         document.addEventListener('DOMContentLoaded', () => {
+        // ... 原有代码 ...
+
+        // 新增：导出功能实现
+        const exportPcapBtn = document.getElementById('export-pcap-btn');
+        const shareAnalysisBtn = document.getElementById('share-analysis-btn');
+        const packetData = document.getElementById('packet-data');
+        const viewModeBtns = document.querySelectorAll('.view-mode-btn');
+
+        // 初始化导出和分享功能
+        initExport();
+        initShare();
+        initViewModes();
+
+        function initExport() {
+            exportPcapBtn.addEventListener('click', () => {
+                const selectedPackets = Array.from(document.querySelectorAll('.packet-checkbox:checked'))
+                    .map(checkbox => checkbox.closest('.packet-row'))
+                    .map(row => {
+                        const packetId = row.getAttribute('data-id');
+                        return packets.find(p => p.id === parseInt(packetId));
+                    });
+
+                if (selectedPackets.length === 0) {
+                    showNotification('请选择至少一个数据包', 'warning');
+                    return;
+                }
+
+                // 导出为PCAP格式（模拟二进制数据）
+                const pcapData = generatePcapData(selectedPackets);
+                const blob = new Blob([pcapData], { type: 'application/vnd.tcpdump.pcap' });
+                const link = document.createElement('a');
+                link.href = URL.createObjectURL(blob);
+                link.download = `http3-analysis-${Date.now()}.pcap`;
+                link.click();
+            });
+        }
+
+        function generatePcapData(packets) {
+            // 模拟PCAP文件头（实际需根据RFC 7942生成）
+            const pcapHeader = new Uint8Array([
+                0xd4, 0xc3, 0xb2, 0xa1, // Magic number
+                0x02, 0x00, // Version major/minor
+                0x04, 0x00, // This zone (GMT)
+                0x00, 0x00, 0x00, 0x00, // Sig figs
+                0x00, 0x00, // Snaplen
+                0x01, 0x00, // Link type (Ethernet)
+            ]);
+
+            // 模拟数据包内容（仅包含十六进制数据）
+            const packetData = packets.flatMap(packet => {
+                const bytes = packet.rawData.map(b => new Uint8Array([b]));
+                const packetHeader = new Uint8Array([
+                    0x00, 0x00, 0x00, 0x00, // Timestamp seconds
+                    0x00, 0x00, 0x00, 0x00, // Timestamp microseconds
+                    0x00, 0x00, // Data length
+                    0x00, 0x00, // Included length
+                ]);
+                return [packetHeader, ...bytes];
+            });
+
+            return new Blob([pcapHeader, ...packetData]);
+        }
+
+        // 新增：分享功能实现
+        function initShare() {
+            shareAnalysisBtn.addEventListener('click', () => {
+                const analysisId = `share-${Date.now()}`;
+                const analysisData = {
+                    packets: packets.map(p => ({
+                        id: p.id,
+                        timestamp: p.timestamp,
+                        source: p.source,
+                        destination: p.destination,
+                        type: p.type,
+                        length: p.length,
+                        status: p.status,
+                        protocols: p.protocols.map(protocol => ({
+                            name: protocol.name,
+                            fields: protocol.fields
+                        }))
+                    })),
+                    totalPackets: packets.length,
+                    http3Requests: document.getElementById('http3-requests').textContent,
+                    quicVersion: document.getElementById('quic-version').textContent
+                };
+
+                localStorage.setItem(analysisId, JSON.stringify(analysisData));
+                const shareUrl = `${window.location.origin}?share=${analysisId}`;
+                navigator.clipboard.writeText(shareUrl)
+                    .then(() => showNotification('分析链接已复制到剪贴板', 'success'))
+                    .catch(() => showNotification('复制链接失败', 'error'));
+            });
+
+            // 处理分享链接加载
+            const urlParams = new URLSearchParams(window.location.search);
+            const shareId = urlParams.get('share');
+            if (shareId) {
+                const savedAnalysis = localStorage.getItem(shareId);
+                if (savedAnalysis) {
+                    const analysisData = JSON.parse(savedAnalysis);
+                    loadSharedAnalysis(analysisData);
+                }
+            }
+        }
+
+        function loadSharedAnalysis(data) {
+            document.getElementById('total-packets').textContent = data.totalPackets;
+            document.getElementById('http3-requests').textContent = data.http3Requests;
+            document.getElementById('quic-version').textContent = data.quicVersion;
+            packets.splice(0, packets.length, ...data.packets);
+            initPacketsTable();
+        }
+
+        // 新增：十六进制/ASCII视图功能完善
+        function initViewModes() {
+            viewModeBtns.forEach(btn => {
+                btn.addEventListener('click', (e) => {
+                    const mode = e.target.getAttribute('data-mode');
+                    viewModeBtns.forEach(b => b.classList.remove('bg-primary', 'text-white'));
+                    e.target.classList.add('bg-primary', 'text-white');
+                    
+                    if (packetData.textContent) {
+                        const currentPacket = packets.find(p => p.id === currentSelectedPacketId);
+                        if (currentPacket) {
+                            packetData.innerHTML = generatePacketData(currentPacket.rawData, mode);
+                        }
+                    }
+                });
+            });
+        }
+
+        let currentSelectedPacketId = null;
+
+        // 修改：数据包点击事件保存当前选中ID
+        document.querySelectorAll('.packet-row').forEach(row => {
+            row.addEventListener('click', () => {
+                currentSelectedPacketId = parseInt(row.getAttribute('data-id'));
+                // 原有高亮逻辑...
+            });
+        });
+
+        // 修改：生成数据包内容时使用当前模式
+        function showPacketDetails(packet) {
+            currentSelectedPacketId = packet.id;
+            // 原有协议树生成逻辑...
+            
+            // 根据当前视图模式显示内容
+            const currentMode = document.querySelector('.view-mode-btn.active')?.getAttribute('data-mode') || 'hex';
+            packetData.innerHTML = generatePacketData(packet.rawData, currentMode);
+        }
+    });
+    </script>
+</body>
+</html>
